@@ -15,7 +15,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 This Snakemake pipeline make use of the [conda package manager](https://docs.conda.io/en/latest/) to install softwares and dependencies.
 1. First, make sure you have conda installed on your system. Use [Miniconda3](https://docs.conda.io/en/latest/miniconda.html) and follow the [installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).  
-2. Using `conda`, install Snakemake by executing the following code in a Shell window: `conda install -c bioconda -c conda-forge snakemake`. This will install `snakemake` in your base environment.
+2. Using `conda`, install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda install -c bioconda -c conda-forge snakemake`. This will install `snakemake` in your base environment.
 3. You can now run the pipeline (see below).  
 
 To execute this pipeline, softwares and dependencies will need to be installed using the conda package manager.   
