@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - shortstack=3.8.5

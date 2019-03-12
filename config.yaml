@@ -1,0 +1,53 @@
+---
+threads: 10
+fastqdir: "fastq/"
+temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
+result_dir: "results/"     # will be kept.
+samples: ["C32","LA4024"]
+
+# genomic and other references
+refs:
+  genome: "S_lycopersicum_chromosomes.3.00.fa" # ITAG3.00: ftp://ftp.solgenomics.net/tomato_genome/assembly/build_3.00/
+  mirbase:
+    mature: "refs/mature.mirbase.release22.fa"
+    hairpin: "refs/hairpin.mirbase.release22.fa"
+
+# Short read aligners
+bowtie2:
+  spikes_params:
+    seedlength:                                 "-L 6"
+    interval_between_seeds:                     "-i S,0,0.5"
+    do_not_aln_to_reverse_strand:               "--norc"
+    read_gap_open_and_extend_penalties:         "--rdg 1,6"
+    reference_gap_open_and_extend_penalties:    "--rfg 1,6"
+    min_score_to_be_valid:                      "--score-min L,-1,-0.6"
+  general_params:
+    seedlength:                                 "-L 6"
+    interval_between_seeds:                     "-i S,0,0.5"
+    do_not_aln_to_reverse_strand:               "--norc"
+    read_gap_open_and_extend_penalties:         "--rdg 1,6"
+    reference_gap_open_and_extend_penalties:    "--rfg 1,6"
+
+# ShortStack
+shortstack:
+  mismatches: "--mismatches 1"          # allows up to X mismatches for a valid alignment
+  naln:       "--bowtie_m 50"           # number of possible alignments
+  mmap:       "--mmap u"                # u = unique seeded guide for handling multi-mapped reads. Can be f/u/r/n
+  dicermin:   "--dicermin 20"           # minimum size of a Dicer-processed small RNA.
+  dicermax:   "--dicermax 24"           # maximum size of a Dicer-processed small RNA.
+  foldsize:   "--foldsize 1000"         # size of genomic RNA segments for folding for MIRNA search
+  pad:        "--pad 100"               # clusters of sRNAs merged if distance less/equal to pad value
+  mincov:     "--mincov 20"             # clusters of small RNAs must have at least this many alignments default: 20
+
+# small RNA lengths filtering
+length:
+  min_length: "18" # will keep everything longer than
+  max_length: "25" # will keep everything shorter than
+
+# trimmomatic parameters
+trimmomatic:
+  LeadMinTrimQual:        '10'       # Cut bases off the start of a read, if below threshold quality of
+  TrailMinTrimQual:       '3'        # Cut bases off the end of a read, if below threshold quality of
+  windowSize:             '4'        # Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15 (SLIDINGWINDOW:4:15)
+  avgMinQual:             '15'       # Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15 (SLIDINGWINDOW:4:15)
+  phred:                  '-phred33' # phred: for illumina >1.8 the quality score are encoded by phred33
