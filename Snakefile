@@ -85,8 +85,9 @@ rule keep_reads_shorter_than:
         "envs/bioawk.yaml"
     shell:
         """
-        bioawk -cfastx 'if (length($seq) <= {params.max_length}) {{print "@"$name"\n"$seq"\n+\n"$qual}} ' {input} > {output}
+        bioawk -c fastx '{{ length($seq) <= {params.max_length} }} {{print "@"$name; print $seq ;print "+";print $qual}}' {input} > {output}
         """
+
 
 rule trimmomatic:
     input:
