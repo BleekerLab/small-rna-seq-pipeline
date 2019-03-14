@@ -1,13 +1,19 @@
-library(optparse)  # to parse the command-line arguments (input directory and output directory)
-library(tidyverse)
-library(data.table)
-library(RColorBrewer)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(svglite))
+
+# capture the command-line arguments after --args (e.g. the shortstack results directory)
+args <- commandArgs(trailingOnly = TRUE)
+shortstack_result_directory = args[1]
+output_directory_for_plots = args[2]
 
 # get the sample names in a list
-samples = list.dirs(path = "results/shortstack/",recursive = F,full.names = F)
+samples = list.dirs(path = shortstack_result_directory,recursive = F,full.names = F)
+
 
 # read the shortstack directories in a named list
-shortstack.dirs = sapply(X = samples,FUN = function(x) {file.path("results/shortstack/",x,"Results.txt")})
+shortstack.dirs = sapply(X = samples,FUN = function(x) {file.path(shortstack_result_directory,x,"Results.txt")})
 
 # get all ShortStack results file into a list
 shortstacks = map(shortstack.dirs,function(x) {fread(x,data.table=FALSE,header = T,sep="\t",check.names = F)})
@@ -15,7 +21,6 @@ shortstacks = map(shortstack.dirs,function(x) {fread(x,data.table=FALSE,header =
 # combine all shortstack Results.txt files row-wise
 all.clusters = plyr::ldply(shortstacks,data.frame)
 colnames(all.clusters)[1]="sample"  # to replace the .id created by ldply
-head(all.clusters)
 
 # filter to keep only relevant columns to produce the nclusters = f(Dicer Call)
 all.clusters.subset = dplyr::select(all.clusters,"sample","Name","DicerCall")
@@ -25,12 +30,14 @@ nclusters_per_dicer_call = all.clusters.subset %>%
   group_by(sample,DicerCall) %>%
   summarise(number_of_clusters = length(Name))
 
+
 # plot N clusters = f(DicerCall)
 g <- ggplot(data = nclusters_per_dicer_call,aes(x=DicerCall,y=number_of_clusters,fill=DicerCall)) +
   geom_bar(stat="identity",color="black") +
   scale_fill_brewer(palette="Set3") +
-  facet_wrap(. ~ sample)
+  facet_wrap( ~ sample)
 
-ggsave(filename = file.path("args$outdir","cluster_abundance_per_dicercall.svg"),plot = p2,width = 7,height = 5)
-ggsave(filename = file.path(args$outdir,"cluster_abundance_per_dicercall.png"),plot = p2,width = 7,height = 5,dpi=400)
+# save the plots
+ggsave(filename = file.path(output_directory_for_plots,"plots/cluster_abundance_per_dicercall.png"),plot = g,width = 7,height = 5,dpi = 400)
+ggsave(filename = file.path(output_directory_for_plots,"plots/cluster_abundance_per_dicercall.svg"),plot = g,width = 7,height = 5)
 

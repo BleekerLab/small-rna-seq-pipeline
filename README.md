@@ -15,15 +15,9 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 This Snakemake pipeline make use of the [conda package manager](https://docs.conda.io/en/latest/) to install softwares and dependencies.
 1. First, make sure you have conda installed on your system. Use [Miniconda3](https://docs.conda.io/en/latest/miniconda.html) and follow the [installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).  
-2. Using `conda`, install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda install -c bioconda -c conda-forge snakemake`. This will install `snakemake` in your base environment.
-3. You can now run the pipeline (see below).  
+2. Using `conda`, create a virtual environment called `snakemake` to install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda create --name snakemake -c bioconda snakemake=5.4.3`. This will install `snakemake version 5.4.3` in a new environment called __snakemake__.
+3. You can now run the pipeline (see below) since snakemake will use conda to install softwares and packages for each rule.  
 
-To execute this pipeline, softwares and dependencies will need to be installed using the conda package manager.   
-Make sure you have Snakemake
-
-```
-Give examples
-```
 
 ### Installing
 If you have set up `conda` and installed `snakemake` in your environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.
@@ -51,14 +45,17 @@ Give an example
 ```
 
 ## Deployment
+You can deploy Snakemake on your local machine or on more powerful cluster systems.
+On the SURFsara LISA cluster, ...
+
 
 Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Snakemake](https://snakemake.readthedocs.io/en/stable/) - Workflow management system
-* [ShortStack](https://github.com/MikeAxtell/ShortStack) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [Snakemake](https://snakemake.readthedocs.io/en/stable/) - The Snakemake workflow management system is a tool to create reproducible and scalable data analyses.
+* [ShortStack](https://github.com/MikeAxtell/ShortStack) - Small RNA loci annotation and quantification.
+* [R](https://www.r-project.org/) - Used to generate plots.
 
 ## Contributing
 

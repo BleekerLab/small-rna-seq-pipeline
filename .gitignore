@@ -1,2 +1,5 @@
 .DS_Store
 .snakemake/
+*ebwt
+*fai
+*results/

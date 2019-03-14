@@ -32,14 +32,31 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
 # ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
-
+PLOTS = RES_DIR + "plots/cluster_abundance_per_dicercall.png"
 
 rule all:
     input:
-        SHORTSTACK
-    #message:"All done! Removing intermediate files"
+        SHORTSTACK,
+        PLOTS
+    output:
+    message:"All done! Removing intermediate files"
     shell:
         "rm -rf {WORKING_DIR}"
+
+rule make_plots:
+    input:
+        expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
+    output:
+        RES_DIR + "plots/cluster_abundance_per_dicercall.png"
+    message: "making plots based on ShortStack results"
+    conda:
+        "envs/plots.yaml"
+    params:
+        shortstack_resdir = RES_DIR + "shortstack/"
+    shell:
+        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R "
+        "{params} "
+        "{RES_DIR} "
 
 rule shortstack:
     input:
