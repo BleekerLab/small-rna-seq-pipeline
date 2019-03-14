@@ -20,18 +20,11 @@ FQ_DIR = config["fastqdir"]
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
+# reference genome
 GENOME = config["refs"]["genome"]
-
-###########
-## Programs
-###########
 
 # ShortStack parameters
 SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
-
-###################
-## Other parameters
-###################
 
 ####################
 ## Desired outputs
@@ -42,10 +35,11 @@ SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["s
 
 
 rule all:
-     input:
-         SHORTSTACK
+    input:
+        SHORTSTACK
     #message:"All done! Removing intermediate files"
-    #shell: "rm -rf {WORKING_DIR}"
+    shell:
+        "rm -rf {WORKING_DIR}"
 
 rule shortstack:
     input:
