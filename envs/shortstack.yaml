@@ -1,4 +1,6 @@
 channels:
   - bioconda
 dependencies:
-  - shortstack=3.8.5
+  - samtools=1.8
+  - bowtie=1.2.0
+  - viennarna=2.4.11=py36hd9629dc_2

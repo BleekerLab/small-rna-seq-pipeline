@@ -53,13 +53,15 @@ rule shortstack:
         genome = GENOME
     output:
         RES_DIR + "shortstack/{sample}/Results.txt",
-        RES_DIR + "shortstack/{sample}/{sample}_aligned.bam"
+        RES_DIR + "shortstack/{sample}/{sample}.trimmed.size.bam"
     message:"Shortstack analysis of {wildcards.sample} using {input.genome} reference"
     params:
         RES_DIR + "shortstack/{sample}/"
     threads: 10
+    conda:
+        "envs/shortstack.yaml"
     shell:
-        "ShortStack "
+        "perl bin/ShortStack.pl "
         "--outdir {wildcards.sample} "
         "--bowtie_cores {threads} "
         "--sort_mem 4G "
@@ -67,7 +69,6 @@ rule shortstack:
         "--readfile {input.reads} "
         "--genome {input.genome};"
         "cp -r {wildcards.sample}/* {params};"
-        "mv {params}{wildcards.sample}_unaligned.bam {params}{wildcards.sample}_aligned.bam ;"
         "rm -r {wildcards.sample};"
 
 #############################

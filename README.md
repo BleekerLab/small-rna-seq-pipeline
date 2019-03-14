@@ -82,3 +82,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * [RNA Biology & Applied Bioinformatics group](http://sils.uva.nl/content/research-groups/rna-biology--applied-bioinformatics/rna-biology--applied-bioinformatics.html)
+
+## References and link
+* Bioawk tutorial: https://isugenomics.github.io/bioinformatics-workbook/Appendix/bioawk-basics
