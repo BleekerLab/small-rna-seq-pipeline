@@ -32,7 +32,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
 # ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
-PLOTS = RES_DIR + "plots/cluster_abundance_per_dicercall.png"
+PLOTS = [RES_DIR + "plots/cluster_abundance_per_dicercall.png",RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png"]
 
 rule all:
     input:
@@ -47,16 +47,16 @@ rule make_plots:
     input:
         expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
     output:
-        RES_DIR + "plots/cluster_abundance_per_dicercall.png"
+        RES_DIR + "plots/cluster_abundance_per_dicercall.png",
+        RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png"
     message: "making plots based on ShortStack results"
     conda:
         "envs/plots.yaml"
     params:
         shortstack_resdir = RES_DIR + "shortstack/"
     shell:
-        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R "
-        "{params} "
-        "{RES_DIR} "
+        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params} {RES_DIR} " # plot 1
+        "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params} {RES_DIR} " # plot 2
 
 rule shortstack:
     input:
