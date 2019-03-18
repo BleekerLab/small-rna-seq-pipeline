@@ -6,7 +6,8 @@ suppressPackageStartupMessages(library(svglite))
 # capture the command-line arguments after --args (e.g. the shortstack results directory)
 args <- commandArgs(trailingOnly = TRUE)
 shortstack_result_directory = args[1]
-output_directory_for_plots = args[2]
+output_png = args[2]
+output_svg = args[3]
 
 # get the sample names in a list
 samples = list.dirs(path = shortstack_result_directory,recursive = F,full.names = F)
@@ -38,6 +39,6 @@ g <- ggplot(data = nclusters_per_dicer_call,aes(x=DicerCall,y=number_of_clusters
   facet_wrap( ~ sample)
 
 # save the plots
-ggsave(filename = file.path(output_directory_for_plots,"plots/cluster_abundance_per_dicercall.png"),plot = g,width = 7,height = 5,dpi = 400)
-ggsave(filename = file.path(output_directory_for_plots,"plots/cluster_abundance_per_dicercall.svg"),plot = g,width = 7,height = 5)
+ggsave(filename = output_png,plot = g,width = 7,height = 5,dpi = 400)
+ggsave(filename = output_svg,plot = g,width = 7,height = 5)
 

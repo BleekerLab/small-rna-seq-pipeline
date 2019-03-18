@@ -32,7 +32,10 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
 # ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
-PLOTS = [RES_DIR + "plots/cluster_abundance_per_dicercall.png",RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png"]
+PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
+         RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
+         #expand(RES_DIR + "plots/{sample}.piechart.png",sample=config["samples"])
+         ]
 
 rule all:
     input:
@@ -43,20 +46,48 @@ rule all:
     shell:
         "rm -rf {WORKING_DIR}"
 
-rule make_plots:
+#############
+# Rules
+############
+rule pie_chart_srna_classes:
+    input:
+        RES_DIR + "shortstack/{sample}/Results.txt"
+    output:
+        RES_DIR + "plots/{sample}.piechart.png"
+    message: "making a pie chart of {wildcards.sample} small RNA classes based on ShortStack results"
+    conda:
+        "envs/plots.yaml"
+    shell:
+        "Rscript --vanilla scripts/piechart.R {input} {output} "
+
+rule plot_number_srna_clusters_per_dicer_call:
     input:
         expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
     output:
-        RES_DIR + "plots/cluster_abundance_per_dicercall.png",
-        RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png"
-    message: "making plots based on ShortStack results"
+        png = RES_DIR + "plots/n_clusters_per_dicercall.png",
+        svg = RES_DIR + "plots/n_clusters_per_dicercall.svg"
+    message: "Making the 'number of sRNA cluster = f(DicerCall)' plot based on ShortStack results"
     conda:
         "envs/plots.yaml"
     params:
-        shortstack_resdir = RES_DIR + "shortstack/"
+        shortstack = RES_DIR + "shortstack/"
     shell:
-        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params} {RES_DIR} " # plot 1
-        "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params} {RES_DIR} " # plot 2
+        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
+
+
+rule plot_cluster_abundance_per_dicer_call:
+    input:
+        expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
+    output:
+        png = RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
+        svg = RES_DIR + "plots/abundance_of_clusters_per_dicer_call.svg"
+    message: "making 'cluster abundance = f(DicerCall)' plot based on ShortStack results"
+    conda:
+        "envs/plots.yaml"
+    params:
+        shortstack = RES_DIR + "shortstack/"
+    shell:
+        "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
 
 rule shortstack:
     input:
