@@ -43,6 +43,25 @@ rule all:
     shell:
         "rm -rf {WORKING_DIR}"
 
+#############
+# Rules
+############
+rule pie_chart_srna_classes:
+    input:
+        RES_DIR + "shortstack/{sample}/Results.txt"
+    output:
+        RES_DIR + "plots/{sample}.piechart.png"
+    message: "making a pie chart of {wilcards.sample} small RNA classes based on ShortStack results"
+    conda:
+        "envs/plots.yaml"
+    params:
+        shortstack_resdir = RES_DIR + "shortstack/"
+    shell:
+        "Rscript --vanilla scripts/piechart.R "
+        "{params}   "
+        "{RES_DIR} "
+
+
 rule make_plots:
     input:
         expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
@@ -55,7 +74,7 @@ rule make_plots:
         shortstack_resdir = RES_DIR + "shortstack/"
     shell:
         "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R "
-        "{params} "
+        "{params}   "
         "{RES_DIR} "
 
 rule shortstack:
