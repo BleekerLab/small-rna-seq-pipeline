@@ -3,4 +3,8 @@
 *ebwt
 *fai
 *results/
+.Rhistory
+Rplots.pdf
+*.Rproj.user
+*.Rproj
 .Rproj.user
