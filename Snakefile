@@ -34,7 +34,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
-         #expand(RES_DIR + "plots/{sample}.piechart.png",sample=config["samples"])
+         expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
          ]
 
 rule all:
@@ -53,7 +53,7 @@ rule pie_chart_srna_classes:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"
     output:
-        RES_DIR + "plots/{sample}.piechart.png"
+        RES_DIR + "plots/piecharts/{sample}.piechart.png"
     message: "making a pie chart of {wildcards.sample} small RNA classes based on ShortStack results"
     conda:
         "envs/plots.yaml"
