@@ -1,8 +1,7 @@
 import os
 import subprocess
-from snakemake.utils import validate, min_version
-#import pandas as pd
-
+from snakemake.utils import min_version
+import pandas as pd
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -32,6 +31,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
 # ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
+MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
          expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
@@ -40,8 +40,8 @@ PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
 rule all:
     input:
         SHORTSTACK,
+        MIRNAS,
         PLOTS
-    output:
     message:"All done! Removing intermediate files"
     shell:
         "rm -rf {WORKING_DIR}"
@@ -49,6 +49,11 @@ rule all:
 #############
 # Rules
 ############
+
+
+#######################
+## Plots
+#######################
 rule pie_chart_srna_classes:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"
@@ -88,6 +93,28 @@ rule plot_cluster_abundance_per_dicer_call:
         shortstack = RES_DIR + "shortstack/"
     shell:
         "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
+
+######################
+# mirbase analysis
+#####################
+rule extract_mature_mirna_fasta_file:
+    input:
+        RES_DIR + "shortstack/{sample}/Results.txt"
+    output:
+        RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
+    message: "extracting mature miRNA fasta file of {wildcards.sample}"
+    run:
+        df = pd.read_csv(input[0],sep="\t",index_col=1)
+        df_mirnas = df[df["MIRNA"] == "Y"]
+        mirnas_dict = df_mirnas["MajorRNA"].to_dict()
+        # convert to fasta format
+        with open(output[0],"w") as fileout:
+            for name,sequence in mirnas_dict.items():
+                fileout.write(">" + name + "\n" + sequence + "\n")
+
+######################
+## Shortstack analysis
+######################
 
 rule shortstack:
     input:
