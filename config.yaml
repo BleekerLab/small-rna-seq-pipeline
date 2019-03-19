@@ -12,21 +12,12 @@ refs:
     mature: "refs/mature.mirbase.release22.fa"
     hairpin: "refs/hairpin.mirbase.release22.fa"
 
-# Short read aligners
-bowtie2:
-  spikes_params:
-    seedlength:                                 "-L 6"
-    interval_between_seeds:                     "-i S,0,0.5"
-    do_not_aln_to_reverse_strand:               "--norc"
-    read_gap_open_and_extend_penalties:         "--rdg 1,6"
-    reference_gap_open_and_extend_penalties:    "--rfg 1,6"
-    min_score_to_be_valid:                      "--score-min L,-1,-0.6"
-  general_params:
-    seedlength:                                 "-L 6"
-    interval_between_seeds:                     "-i S,0,0.5"
-    do_not_aln_to_reverse_strand:               "--norc"
-    read_gap_open_and_extend_penalties:         "--rdg 1,6"
-    reference_gap_open_and_extend_penalties:    "--rfg 1,6"
+# blastn
+blastn:
+  qcov_hsp_perc:   "100" # Query Coverage Per HSP
+  max_target_seqs: "1"   # max number of sequences to keep 
+
+
 
 # ShortStack
 shortstack:

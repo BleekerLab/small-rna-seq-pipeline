@@ -32,6 +32,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 # ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
+BLAST = expand(RES_DIR + "blast/{sample}.mirbase.txt",sample=config["samples"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
          expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
@@ -41,6 +42,7 @@ rule all:
     input:
         SHORTSTACK,
         MIRNAS,
+        BLAST,
         PLOTS
     message:"All done! Removing intermediate files"
     shell:
@@ -51,9 +53,9 @@ rule all:
 ############
 
 
-#######################
+########
 ## Plots
-#######################
+########
 rule pie_chart_srna_classes:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"
@@ -79,7 +81,6 @@ rule plot_number_srna_clusters_per_dicer_call:
     shell:
         "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
 
-
 rule plot_cluster_abundance_per_dicer_call:
     input:
         expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
@@ -94,9 +95,41 @@ rule plot_cluster_abundance_per_dicer_call:
     shell:
         "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
 
-######################
+##################
 # mirbase analysis
-#####################
+##################
+rule blast_against_mirbase:
+    input:
+        db = "refs/mature.mirbase.release22.fa" + ".nhr",
+        fasta = RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
+    output:
+        RES_DIR + "blast/{sample}.mirbase.txt"
+    message:"blasting {wildcards.sample} mature miRNAs against mirbase"
+    conda:
+        "envs/blast.yaml"
+    params:
+        qcov_hsp_perc = config["blastn"]["qcov_hsp_perc"],
+        max_target_seqs = config["blastn"]["max_target_seqs"]
+    shell:
+        "blastn -db {input.db} "
+        "-task blastn-short "                     # BLASTN program optimized for sequences shorter than 50 bases
+        "-qcov_hsp_perc {params.qcov_hsp_perc} "  # full coverage
+        "-outfmt 6"                               # tabular output format
+        "-query {input.fasta} "
+        "-out {output}"
+
+rule make_mirbase_blastdb:
+    input:
+        "refs/mature.mirbase.release22.fa"
+    output:
+        "refs/mature.mirbase.release22.fa" + ".nhr"
+    message: "creating blastdb database for {input}"
+    conda:
+        "envs/blast.yaml"
+    shell:
+        "makeblastdb -in {input} -dbtype nucl"
+
+
 rule extract_mature_mirna_fasta_file:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"

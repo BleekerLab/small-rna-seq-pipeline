@@ -9,3 +9,9 @@ Rplots.pdf
 *.Rproj
 .Rproj.user
 .ipynb_checkpoints
+*.nhr
+*.nin
+*.nog
+*.nsd
+*.nsi
+*.nsq
