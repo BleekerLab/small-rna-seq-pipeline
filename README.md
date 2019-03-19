@@ -21,7 +21,7 @@ This Snakemake pipeline make use of the [conda package manager](https://docs.con
 
 
 ### Installing
-If you have set up `conda` and installed `snakemake` in your environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.
+If you have set up `conda` and created the `snakemake` environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.
 
 
 ## Running the tests
