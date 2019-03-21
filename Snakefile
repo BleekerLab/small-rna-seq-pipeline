@@ -28,8 +28,6 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
-
-# ShortStack
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 BLAST = expand(RES_DIR + "blast/{sample}.mirbase.txt",sample=config["samples"])
@@ -46,12 +44,11 @@ rule all:
         PLOTS
     message:"All done! Removing intermediate files"
     shell:
-        "rm -rf {WORKING_DIR}"
+        "rm -rf {WORKING_DIR}" # removes unwanted intermediate files
 
-#############
+#######
 # Rules
-############
-
+#######
 
 ########
 ## Plots
@@ -100,7 +97,7 @@ rule plot_cluster_abundance_per_dicer_call:
 ##################
 rule blast_against_mirbase:
     input:
-        db = "refs/mature.mirbase.release22.fa" + ".nhr",
+        db = config["refs"]["mirbase"]["mature"] + ".nhr",
         fasta = RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
     output:
         RES_DIR + "blast/{sample}.mirbase.txt"
@@ -108,21 +105,23 @@ rule blast_against_mirbase:
     conda:
         "envs/blast.yaml"
     params:
+        dbname = config["refs"]["mirbase"]["mature"],
         qcov_hsp_perc = config["blastn"]["qcov_hsp_perc"],
         max_target_seqs = config["blastn"]["max_target_seqs"]
     shell:
-        "blastn -db {input.db} "
-        "-task blastn-short "                     # BLASTN program optimized for sequences shorter than 50 bases
-        "-qcov_hsp_perc {params.qcov_hsp_perc} "  # full coverage
-        "-outfmt 6"                               # tabular output format
+        "blastn -db {params.dbname} "
+        "-task blastn-short "                         # BLASTN program optimized for sequences shorter than 50 bases
+        "-qcov_hsp_perc {params.qcov_hsp_perc} "
+        "-max_target_seqs {params.max_target_seqs} "
+        "-outfmt 6 "                                  # tabular output format
         "-query {input.fasta} "
         "-out {output}"
 
 rule make_mirbase_blastdb:
     input:
-        "refs/mature.mirbase.release22.fa"
+        config["refs"]["mirbase"]["mature"]
     output:
-        "refs/mature.mirbase.release22.fa" + ".nhr"
+        config["refs"]["mirbase"]["mature"] + ".nhr"
     message: "creating blastdb database for {input}"
     conda:
         "envs/blast.yaml"
