@@ -38,7 +38,8 @@ HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["sample
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
-         expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
+         expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"]),
+         expand(RES_DIR + "plots/MIR/{sample}.mirgenes.png",sample=config["samples"])
          ]
 
 rule all:
@@ -59,6 +60,18 @@ rule all:
 ########
 ## Plots
 ########
+rule mir_gene_families_barplot:
+    input:
+        RES_DIR + "blast/{sample}.hairpin_mirbase.header.txt"
+    output:
+        png = RES_DIR + "plots/MIR/{sample}.mirgenes.png",
+        svg = RES_DIR + "plots/MIR/{sample}.mirgenes.svg"
+    message:"Counting and plotting the number of MIR genes per family"
+    conda:
+        "envs/plots.yaml"
+    shell:
+        "Rscript --vanilla scripts/mir_gene_families.R {input} {output.png} {output.svg}"
+
 rule pie_chart_srna_classes:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"
