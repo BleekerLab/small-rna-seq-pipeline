@@ -25,30 +25,16 @@ If you have set up `conda` and created the `snakemake` environment, that's all y
 
 
 ## Running the tests
-A small dataset is available in `test/` to run some tests rapidly.   
+A small dataset is available in `test/` to run some tests rapidly. It will use the genome and miRBase reference fasta files stored in `refs/`.  
+To run the test, open a new Shell window and:
+1. Activate your working environment: `source activate snakemake`
+2. Type `snakemake --use-conda -np` for a dry run. No analysis is run but it checks that the Directed Acyclic Graph of jobs is OK (input and output from each rule chained to each other).
+3. For the real run, type `snakemake --use-conda`
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
 
 ## Deployment
 You can deploy Snakemake on your local machine or on more powerful cluster systems.
 On the SURFsara LISA cluster, ...
-
 
 Add additional notes about how to deploy this on a live system
 
