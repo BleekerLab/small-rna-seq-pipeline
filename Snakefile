@@ -2,6 +2,9 @@ import os
 import subprocess
 from snakemake.utils import min_version
 import pandas as pd
+from helpers import extract_hairpin_name_and_sequence
+from helpers import collect_clusterfiles_path
+from helpers import converts_list_of_sequence_dictionary_to_fasta
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -30,6 +33,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
+HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
 BLAST = expand(RES_DIR + "blast/{sample}.mirbase.txt",sample=config["samples"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
@@ -40,6 +44,7 @@ rule all:
     input:
         SHORTSTACK,
         MIRNAS,
+        HAIRPINS,
         BLAST,
         PLOTS
     message:"All done! Removing intermediate files"
@@ -95,6 +100,23 @@ rule plot_cluster_abundance_per_dicer_call:
 ##################
 # mirbase analysis
 ##################
+rule extract_hairpin_fasta_file:
+    input:
+        RES_DIR + "shortstack/{sample}/Results.txt" # not used in the actual rule but necessary to chain this rule to the shortstack rule
+    output:
+        RES_DIR + "fasta/{sample}.hairpin.fasta"
+    message: "extracting hairpin sequences for {wildcards.sample} clusters annotated as true MIRNAs by ShortStack"
+    params:
+        mirna_clusterpath = RES_DIR + "shortstack/{sample}/MIRNAs/",
+        samples = list(config["samples"])
+    run:
+        for sample in params[1]:
+            # make a list of sequence dictionaries (clusterName:hairpinSequence)
+            l = [extract_hairpin_name_and_sequence(cluster,sample) for cluster in collect_clusterfiles_path(params[0])]
+            # writes this dictionary to a fasta file
+            converts_list_of_sequence_dictionary_to_fasta(l,output[0])
+
+
 rule blast_against_mirbase:
     input:
         db = config["refs"]["mirbase"]["mature"] + ".nhr",
@@ -127,7 +149,6 @@ rule make_mirbase_blastdb:
         "envs/blast.yaml"
     shell:
         "makeblastdb -in {input} -dbtype nucl"
-
 
 rule extract_mature_mirna_fasta_file:
     input:
@@ -162,7 +183,7 @@ rule shortstack:
     conda:
         "envs/shortstack.yaml"
     shell:
-        "perl bin/ShortStack.pl "
+        "ShortStack "
         "--outdir {wildcards.sample} "
         "--bowtie_cores {threads} "
         "--sort_mem 4G "
