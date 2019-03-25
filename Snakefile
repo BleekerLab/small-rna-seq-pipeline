@@ -5,6 +5,7 @@ import pandas as pd
 from helpers import extract_hairpin_name_and_sequence
 from helpers import collect_clusterfiles_path
 from helpers import converts_list_of_sequence_dictionary_to_fasta
+from helpers import add_blast_header_to_file
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -34,7 +35,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
-BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.txt",sample=config["samples"],type=["mature","hairpin"])
+BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
          expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
@@ -100,12 +101,26 @@ rule plot_cluster_abundance_per_dicer_call:
 ##################
 # mirbase analysis
 ##################
+rule add_blast_header:
+    input:
+        hairpin = WORKING_DIR + "blast/{sample}.hairpin_mirbase.txt",
+        mature = WORKING_DIR + "blast/{sample}.mature_mirbase.txt"
+    output:
+        hairpin = RES_DIR + "blast/{sample}.hairpin_mirbase.header.txt",
+        mature = RES_DIR + "blast/{sample}.mature_mirbase.header.txt"
+    message: "adding blast header for {wildcards.sample}"
+    params:
+        blast_header = "qseqid \t subject_id \t pct_identity \t aln_length \t n_of_mismatches gap_openings \t q_start \t q_end \t s_start \t s_end \t e_value \t bit_score"
+    run:
+        add_blast_header_to_file(input[0],output[0]) # hairpin
+        add_blast_header_to_file(input[1],output[1]) # mature
+
 rule blast_hairpin_against_mirbase:
     input:
         db = config["refs"]["mirbase"]["hairpin"] + ".nhr",
         fasta = RES_DIR + "fasta/{sample}.hairpin.fasta"
     output:
-        RES_DIR + "blast/{sample}.hairpin_mirbase.txt"
+        WORKING_DIR + "blast/{sample}.hairpin_mirbase.txt"
     message:"blasting {wildcards.sample} hairpins against mirbase"
     conda:
         "envs/blast.yaml"
@@ -141,7 +156,7 @@ rule blast_mature_mirna_against_mirbase:
         db = config["refs"]["mirbase"]["mature"] + ".nhr",
         fasta = RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
     output:
-        RES_DIR + "blast/{sample}.mature_mirbase.txt"
+        WORKING_DIR + "blast/{sample}.mature_mirbase.txt"
     message:"blasting {wildcards.sample} mature miRNAs against mirbase"
     conda:
         "envs/blast.yaml"

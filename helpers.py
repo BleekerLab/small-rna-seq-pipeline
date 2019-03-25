@@ -1,5 +1,6 @@
 # helper functions
 import os
+import pandas as pd
 
 # a function that list the cluster files given a path and returns a list of paths
 def collect_clusterfiles_path(path_to_mirna_folder):
@@ -31,3 +32,22 @@ def converts_list_of_sequence_dictionary_to_fasta(list_of_sequence_dictionaries,
         for sequence_dictionary in list_of_sequence_dictionaries:
             for clusterName, hairpinSequence in sequence_dictionary.items():
                 fileout.write(">" + clusterName + "\n" + hairpinSequence + "\n")
+
+# add blast header to blast result files
+def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
+    "takes a blast result file (outformat 6 not customized) and add a header"
+    blast_header = ["qseqid",
+                "subject_id",
+                "pct_identity",
+                "aln_length",
+                "n_of_mismatches",
+                "gap_openings",
+                "q_start",
+                "q_end",
+                "s_start",
+                "s_end",
+                "e_value",
+                "bit_score"]
+    df = pd.read_csv(blast_file_without_header,sep="\t",header=None)
+    df.columns = blast_header
+    df.to_csv(blast_file_with_header,sep="\t",header=True,index=False)
