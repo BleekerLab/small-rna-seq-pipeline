@@ -34,7 +34,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
-BLAST = expand(RES_DIR + "blast/{sample}.mirbase.txt",sample=config["samples"])
+BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.txt",sample=config["samples"],type=["mature","hairpin"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
          RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
          expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"])
@@ -100,6 +100,25 @@ rule plot_cluster_abundance_per_dicer_call:
 ##################
 # mirbase analysis
 ##################
+rule blast_hairpin_against_mirbase:
+    input:
+        db = config["refs"]["mirbase"]["hairpin"] + ".nhr",
+        fasta = RES_DIR + "fasta/{sample}.hairpin.fasta"
+    output:
+        RES_DIR + "blast/{sample}.hairpin_mirbase.txt"
+    message:"blasting {wildcards.sample} hairpins against mirbase"
+    conda:
+        "envs/blast.yaml"
+    params:
+        dbname = config["refs"]["mirbase"]["hairpin"],
+        max_target_seqs = config["blastn"]["hairpin"]["max_target_seqs"]
+    shell:
+        "blastn -db {params.dbname} "
+        "-max_target_seqs {params.max_target_seqs} "
+        "-outfmt 6 "                                  # tabular output format
+        "-query {input.fasta} "
+        "-out {output}"
+
 rule extract_hairpin_fasta_file:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt" # not used in the actual rule but necessary to chain this rule to the shortstack rule
@@ -117,19 +136,19 @@ rule extract_hairpin_fasta_file:
             converts_list_of_sequence_dictionary_to_fasta(l,output[0])
 
 
-rule blast_against_mirbase:
+rule blast_mature_mirna_against_mirbase:
     input:
         db = config["refs"]["mirbase"]["mature"] + ".nhr",
         fasta = RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
     output:
-        RES_DIR + "blast/{sample}.mirbase.txt"
+        RES_DIR + "blast/{sample}.mature_mirbase.txt"
     message:"blasting {wildcards.sample} mature miRNAs against mirbase"
     conda:
         "envs/blast.yaml"
     params:
         dbname = config["refs"]["mirbase"]["mature"],
-        qcov_hsp_perc = config["blastn"]["qcov_hsp_perc"],
-        max_target_seqs = config["blastn"]["max_target_seqs"]
+        qcov_hsp_perc = config["blastn"]["mature"]["qcov_hsp_perc"],
+        max_target_seqs = config["blastn"]["mature"]["max_target_seqs"]
     shell:
         "blastn -db {params.dbname} "
         "-task blastn-short "                         # BLASTN program optimized for sequences shorter than 50 bases
@@ -141,14 +160,17 @@ rule blast_against_mirbase:
 
 rule make_mirbase_blastdb:
     input:
-        config["refs"]["mirbase"]["mature"]
+        mature = config["refs"]["mirbase"]["mature"],
+        hairpin = config["refs"]["mirbase"]["hairpin"]
     output:
-        config["refs"]["mirbase"]["mature"] + ".nhr"
-    message: "creating blastdb database for {input}"
+        mature = config["refs"]["mirbase"]["mature"] + ".nhr",
+        hairpin = config["refs"]["mirbase"]["hairpin"] + ".nhr",
+    message: "creating blastdb databases for mature miRNA and hairpins"
     conda:
         "envs/blast.yaml"
     shell:
-        "makeblastdb -in {input} -dbtype nucl"
+        "makeblastdb -in {input.mature} -dbtype nucl;"
+        "makeblastdb -in {input.hairpin} -dbtype nucl"
 
 rule extract_mature_mirna_fasta_file:
     input:

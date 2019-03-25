@@ -14,8 +14,11 @@ refs:
 
 # blastn
 blastn:
-  qcov_hsp_perc:   "100" # Query Coverage Per HSP
-  max_target_seqs: "1"   # max number of sequences to keep 
+  mature:
+    qcov_hsp_perc:   "100" # Query Coverage Per HSP
+    max_target_seqs: "1"   # max number of sequences to keep
+  hairpin:
+    max_target_seqs: "1"
 
 
 
