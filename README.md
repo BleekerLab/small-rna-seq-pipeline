@@ -15,39 +15,26 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 This Snakemake pipeline make use of the [conda package manager](https://docs.conda.io/en/latest/) to install softwares and dependencies.
 1. First, make sure you have conda installed on your system. Use [Miniconda3](https://docs.conda.io/en/latest/miniconda.html) and follow the [installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).  
-2. Using `conda`, create a virtual environment called `snakemake` to install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda create --name snakemake -c bioconda snakemake=5.4.3`. This will install `snakemake version 5.4.3` in a new environment called __snakemake__.
-3. You can now run the pipeline (see below) since snakemake will use conda to install softwares and packages for each rule.  
+2. Using `conda`, create a virtual environment called `snakemake` to install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda create --name snakemake -c bioconda snakemake=5.4.3 pandas=0.24.2`. This will install `snakemake version 5.4.3` and `pandas version 0.24.2` in a new environment called __snakemake__.
+3. Activate this environment using: `source activate snakemake`
+4. You can now run the pipeline (see below) since snakemake will use conda to install softwares and packages for each rule.  
 
 
 ### Installing
-If you have set up `conda` and installed `snakemake` in your environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.
+If you have set up `conda` and created the `snakemake` environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.
 
 
 ## Running the tests
-A small dataset is available in `test/` to run some tests rapidly.   
+A small dataset is available in `test/` to run some tests rapidly. It will use the genome and miRBase reference fasta files stored in `refs/`.  
+To run the test, open a new Shell window and:
+1. Activate your working environment: `source activate snakemake`
+2. Type `snakemake --use-conda -np` for a dry run. No analysis is run but it checks that the Directed Acyclic Graph of jobs is OK (input and output from each rule chained to each other).
+3. For the real run, type `snakemake --use-conda`
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
 
 ## Deployment
 You can deploy Snakemake on your local machine or on more powerful cluster systems.
 On the SURFsara LISA cluster, ...
-
 
 Add additional notes about how to deploy this on a live system
 

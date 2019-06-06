@@ -8,3 +8,11 @@ Rplots.pdf
 *.Rproj.user
 *.Rproj
 .Rproj.user
+.ipynb_checkpoints
+*.nhr
+*.nin
+*.nog
+*.nsd
+*.nsi
+*.nsq
+*__pycache__
