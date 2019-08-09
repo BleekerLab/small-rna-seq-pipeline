@@ -1,4 +1,4 @@
-# The small RNA landscape pipeline
+# The small RNA-Seq description pipeline
 A [Snakemake](https://snakemake.readthedocs.io/en/stable/) pipeline to annotate small RNA loci (miRNAs, phased siRNAs) using a reference genome and experimental sRNA-Seq datasets.  
 This pipeline heavily relies on the [ShortStack](https://github.com/MikeAxtell/ShortStack) software that annotates and quantifies small RNAs using a reference genome.  
 Upon completion, several outputs will be generated for each sample:
