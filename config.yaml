@@ -1,13 +1,12 @@
 ---
-threads: 10
 fastqdir: "fastq/"
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
-samples: ["C32.sub","LA4024.sub"]
+samples: ["LA0716","LA1777","LA4024","Moneymaker","PI127826"]
 
 # genomic and other references
 refs:
-  genome: "refs/S_lycopersicum_chromosomes.3.00.chrom1.fa" # ITAG3.00: ftp://ftp.solgenomics.net/tomato_genome/assembly/build_3.00/
+  genome: "refs/S_lycopersicum_chromosomes.3.00.fa" # ITAG3.00: ftp://ftp.solgenomics.net/tomato_genome/assembly/build_3.00/
   mirbase:
     mature: "refs/mature.mirbase.release22.fa"
     hairpin: "refs/hairpin.mirbase.release22.fa"
