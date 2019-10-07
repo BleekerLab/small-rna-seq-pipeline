@@ -1,8 +1,12 @@
 # The small RNA-Seq description pipeline
 A [Snakemake](https://snakemake.readthedocs.io/en/stable/) pipeline to annotate small RNA loci (miRNAs, phased siRNAs) using a reference genome and experimental sRNA-Seq datasets.  
 This pipeline heavily relies on the [ShortStack](https://github.com/MikeAxtell/ShortStack) software that annotates and quantifies small RNAs using a reference genome.  
+
 Upon completion, several outputs will be generated for each sample:
-- Number of small RNA clusters per predominant sRNA length ("Dicer Call")
+- A Shortstack result file: reference to ShortStack here.
+- Blast the predicted microRNA hairpins and mature miRNAs against mirbase (version of mirbase in the config file). 
+
+# this should go...
 - Abundance of small RNA clusters per predominant sRNA length ("Dicer Call")
 - Proportion of sRNA classes per sample (pie chart)
 - Number of MIR genes per family (barplot)
