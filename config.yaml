@@ -1,12 +1,12 @@
 ---
-fastqdir: "/home/mgalland/data/01_sequencing_runs/20151007_small_RNAs_20_accessions/"
+fastqdir: "fastq/"
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
-samples: ["LA0407","LA0716","LA0735","LA1278","LA1364","LA1401","LA1578","LA1718","LA1777","LA1840","LA1954","LA2133","LA2172","LA2386","LA2695","LA4024","LYC4","Moneymaker","PI127826","PI134418"]
+samples: ["C32.sub", "LA4024.sub"|
 
 # genomic and other references
 refs:
-  genome: "refs/S_lycopersicum_chromosomes.3.00.fa"
+  genome: "refs/S_lycopersicum_chromosomes.3.00.chrom1.fa"
   mirbase:
     mature: "refs/mature.mirbase.release22.fa"
     hairpin: "refs/hairpin.mirbase.release22.fa"
