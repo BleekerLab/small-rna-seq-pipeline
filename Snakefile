@@ -32,7 +32,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
-SHORTSTACK = expand(RES_DIR + "shortstack_{version}/{sample}/Results.txt",version=["3_8_5","3_6"],sample=config["samples"])
+SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 
 
 
@@ -40,7 +40,6 @@ MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["sa
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
 PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
-         RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
          expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"]),
          expand(RES_DIR + "plots/MIR/{sample}.mirgenes.png",sample=config["samples"])
          ]
@@ -77,7 +76,7 @@ rule mir_gene_families_barplot:
 
 rule pie_chart_srna_classes:
     input:
-        RES_DIR + "shortstack_3_8_5/{sample}/Results.txt"
+        RES_DIR + "shortstack/{sample}/Results.txt"
     output:
         RES_DIR + "plots/piecharts/{sample}.piechart.png"
     message: "making a pie chart of {wildcards.sample} small RNA classes based on ShortStack results"
@@ -88,7 +87,7 @@ rule pie_chart_srna_classes:
 
 rule plot_number_srna_clusters_per_dicer_call:
     input:
-        expand(RES_DIR + "shortstack_3_8_5/{sample}/Results.txt",sample=config["samples"])
+        expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
     output:
         png = RES_DIR + "plots/n_clusters_per_dicercall.png",
         svg = RES_DIR + "plots/n_clusters_per_dicercall.svg"
@@ -96,23 +95,9 @@ rule plot_number_srna_clusters_per_dicer_call:
     conda:
         "envs/plots.yaml"
     params:
-        shortstack = RES_DIR + "shortstack_3_8_5/"
+        shortstack = RES_DIR + "shortstack/"
     shell:
         "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
-
-rule plot_cluster_abundance_per_dicer_call:
-    input:
-        expand(RES_DIR + "shortstack_3_8_5/{sample}/Results.txt",sample=config["samples"])
-    output:
-        png = RES_DIR + "plots/abundance_of_clusters_per_dicer_call.png",
-        svg = RES_DIR + "plots/abundance_of_clusters_per_dicer_call.svg"
-    message: "making 'cluster abundance = f(DicerCall)' plot based on ShortStack results"
-    conda:
-        "envs/plots.yaml"
-    params:
-        shortstack = RES_DIR + "shortstack_3_8_5/"
-    shell:
-        "Rscript --vanilla scripts/abundance_of_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
 
 ##################
 # mirbase analysis
@@ -152,12 +137,12 @@ rule blast_hairpin_against_mirbase:
 
 rule extract_hairpin_fasta_file:
     input:
-        RES_DIR + "shortstack_3_8_5/{sample}/Results.txt" # not used in the actual rule but necessary to chain this rule to the shortstack rule
+        RES_DIR + "shortstack/{sample}/Results.txt" # not used in the actual rule but necessary to chain this rule to the shortstack rule
     output:
         RES_DIR + "fasta/{sample}.hairpin.fasta"
-    message: "extracting hairpin sequences for {wildcards.sample} clusters annotated as true MIRNAs by shortstack_3_8_5"
+    message: "extracting hairpin sequences for {wildcards.sample} clusters annotated as true MIRNAs by shortstack"
     params:
-        mirna_clusterpath = RES_DIR + "shortstack_3_8_5/{sample}/MIRNAs/",
+        mirna_clusterpath = RES_DIR + "shortstack/{sample}/MIRNAs/",
         samples = list(config["samples"])
     run:
         for sample in params[1]:
@@ -205,7 +190,7 @@ rule make_mirbase_blastdb:
 
 rule extract_mature_mirna_fasta_file:
     input:
-        RES_DIR + "shortstack_3_8_5/{sample}/Results.txt"
+        RES_DIR + "shortstack/{sample}/Results.txt"
     output:
         RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
     message: "extracting mature miRNA fasta file of {wildcards.sample}"
@@ -222,43 +207,16 @@ rule extract_mature_mirna_fasta_file:
 ## Shortstack analysis
 ######################
 
-rule shortstack_3_8_5:
+rule shortstack:
     input:
         reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq",
         genome = GENOME
     output:
-        RES_DIR + "shortstack_3_8_5/{sample}/Results.txt",
-        RES_DIR + "shortstack_3_8_5/{sample}/{sample}.trimmed.size.bam"
-    message:"Shortstack (v3.8.5) analysis of {wildcards.sample} using {input.genome} reference"
-    params:
-        RES_DIR + "shortstack_3_8_5/{sample}/"
-    threads: 10
-    conda:
-        "envs/shortstack.yaml"
-    shadow:"full"
-    shell:
-        "ShortStack "
-        "--outdir {wildcards.sample} "
-        "--bowtie_cores {threads} "
-        "--sort_mem 4G "
-        "{SHORTSTACK_PARAMS} "
-        "--readfile {input.reads} "
-        "--genome {input.genome};"
-        "cp -r {wildcards.sample}/* {params};"
-        "rm -r {wildcards.sample};"
-
-rule shortstack_3_6:
-    input:
-        reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq",
-        genome = GENOME
-    output:
-        RES_DIR + "shortstack_3_6/{sample}/Results.txt",
-        RES_DIR + "shortstack_3_6/{sample}/{sample}.trimmed.size.bam"
+        RES_DIR + "shortstack/{sample}/Results.txt"
     message:"Shortstack analysis (v3.6.0) of {wildcards.sample} using {input.genome} reference"
     params:
-        RES_DIR + "shortstack_3_6/{sample}/"
+        RES_DIR + "shortstack/{sample}/"
     threads: 10
-    shadow:"full"
     conda:
         "envs/shortstack.yaml"
     shell:
