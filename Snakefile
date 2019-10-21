@@ -213,14 +213,14 @@ rule shortstack:
         genome = GENOME
     output:
         RES_DIR + "shortstack/{sample}/Results.txt"
-    message:"Shortstack analysis (v3.6.0) of {wildcards.sample} using {input.genome} reference"
+    message:"Shortstack analysis of {wildcards.sample} using {input.genome} reference"
     params:
         RES_DIR + "shortstack/{sample}/"
     threads: 10
     conda:
         "envs/shortstack.yaml"
     shell:
-        "./scr/ShortStack-3.6/ShortStack "
+        "ShortStack "
         "--outdir {wildcards.sample} "
         "--bowtie_cores {threads} "
         "--sort_mem 4G "
