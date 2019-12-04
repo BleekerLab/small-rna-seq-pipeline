@@ -39,18 +39,13 @@ SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["s
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
-PLOTS = [RES_DIR + "plots/n_clusters_per_dicercall.png",
-         expand(RES_DIR + "plots/piecharts/{sample}.piechart.png",sample=config["samples"]),
-         expand(RES_DIR + "plots/MIR/{sample}.mirgenes.png",sample=config["samples"])
-         ]
 
 rule all:
     input:
         SHORTSTACK,
         MIRNAS,
         HAIRPINS,
-        BLAST,
-        PLOTS
+        BLAST
     message:"All done! Removing intermediate files"
     shell:
         "rm -rf {WORKING_DIR}" # removes unwanted intermediate files
@@ -59,45 +54,6 @@ rule all:
 # Rules
 #######
 
-########
-## Plots
-########
-rule mir_gene_families_barplot:
-    input:
-        RES_DIR + "blast/{sample}.hairpin_mirbase.header.txt"
-    output:
-        png = RES_DIR + "plots/MIR/{sample}.mirgenes.png",
-        svg = RES_DIR + "plots/MIR/{sample}.mirgenes.svg"
-    message:"Counting and plotting the number of MIR genes per family"
-    conda:
-        "envs/plots.yaml"
-    shell:
-        "Rscript --vanilla scripts/mir_gene_families.R {input} {output.png} {output.svg}"
-
-rule pie_chart_srna_classes:
-    input:
-        RES_DIR + "shortstack/{sample}/Results.txt"
-    output:
-        RES_DIR + "plots/piecharts/{sample}.piechart.png"
-    message: "making a pie chart of {wildcards.sample} small RNA classes based on ShortStack results"
-    conda:
-        "envs/plots.yaml"
-    shell:
-        "Rscript --vanilla scripts/piechart.R {input} {output} "
-
-rule plot_number_srna_clusters_per_dicer_call:
-    input:
-        expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
-    output:
-        png = RES_DIR + "plots/n_clusters_per_dicercall.png",
-        svg = RES_DIR + "plots/n_clusters_per_dicercall.svg"
-    message: "Making the 'number of sRNA cluster = f(DicerCall)' plot based on ShortStack results"
-    conda:
-        "envs/plots.yaml"
-    params:
-        shortstack = RES_DIR + "shortstack/"
-    shell:
-        "Rscript --vanilla scripts/number_srna_clusters_per_dicer_call.R {params.shortstack} {output.png} {output.svg} "
 
 ##################
 # mirbase analysis
