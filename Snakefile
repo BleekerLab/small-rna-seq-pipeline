@@ -23,9 +23,6 @@ FQ_DIR = config["fastqdir"]
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
-# reference genome
-GENOME = config["refs"]["genome"]
-
 # ShortStack parameters
 SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
@@ -166,12 +163,13 @@ rule extract_mature_mirna_fasta_file:
 rule shortstack:
     input:
         reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq",
-        genome = GENOME
+        #genome = config["refs"]["genomes"][wildcards.sample] # selects a genome reference specifically for each sample
     output:
         RES_DIR + "shortstack/{sample}/Results.txt"
-    message:"Shortstack analysis of {wildcards.sample} using {input.genome} reference"
+    message:"Shortstack analysis of {wildcards.sample} using {params.genome} reference"
     params:
-        RES_DIR + "shortstack/{sample}/"
+        resdir = RES_DIR + "shortstack/{sample}/",
+        genome = lambda wildcards: config["refs"]["genomes"][wildcards.sample]
     threads: 10
     conda:
         "envs/shortstack.yaml"
@@ -182,8 +180,8 @@ rule shortstack:
         "--sort_mem 4G "
         "{SHORTSTACK_PARAMS} "
         "--readfile {input.reads} "
-        "--genome {input.genome};"
-        "cp -r {wildcards.sample}/* {params};"
+        "--genome {params.genome};"
+        "cp -r {wildcards.sample}/* {params.resdir};"
         "rm -r {wildcards.sample};"
 
 #############################
