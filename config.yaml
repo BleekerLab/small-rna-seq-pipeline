@@ -2,7 +2,7 @@
 fastqdir: "fastq/"
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
-samples: ["C32.sub", "LA4024.sub"|
+samples: ["C32.sub", "LA4024.sub"]
 
 # genomic and other references
 refs:
