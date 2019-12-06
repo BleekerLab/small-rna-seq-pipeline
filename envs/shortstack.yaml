@@ -2,7 +2,7 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - samtools=1.8
+  - samtools=1.9
   - bowtie=1.2.0
   - viennarna=2.4.11
   - shortstack=3.8.5  

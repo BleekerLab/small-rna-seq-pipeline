@@ -6,7 +6,9 @@ samples: ["C32.sub", "LA4024.sub"]
 
 # genomic and other references
 refs:
-  genome: "refs/S_lycopersicum_chromosomes.3.00.chrom1.fa"
+  genomes: 
+    C32.sub: "refs/S_lycopersicum_chromosomes.3.00.chrom1.fa"          # genome ref number 1
+    LA4024.sub: "refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fasta"  # genome ref number 2
   mirbase:
     mature: "refs/mature.mirbase.release22.fa"
     hairpin: "refs/hairpin.mirbase.release22.fa"
@@ -30,7 +32,7 @@ shortstack:
   dicermax:   "--dicermax 24"           # maximum size of a Dicer-processed small RNA.
   foldsize:   "--foldsize 1000"         # size of genomic RNA segments for folding for MIRNA search
   pad:        "--pad 100"               # clusters of sRNAs merged if distance less/equal to pad value
-  mincov:     "--mincov 20"             # clusters of small RNAs must have at least this many alignments default: 20
+  mincov:     "--mincov 0.5rpm"           # threshold of X reads per million for cluster detection
 
 # small RNA lengths filtering
 length:
