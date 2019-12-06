@@ -31,10 +31,9 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
 
-
-
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
+
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
 
 rule all:
@@ -162,8 +161,7 @@ rule extract_mature_mirna_fasta_file:
 
 rule shortstack:
     input:
-        reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq",
-        #genome = config["refs"]["genomes"][wildcards.sample] # selects a genome reference specifically for each sample
+        reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq"
     output:
         RES_DIR + "shortstack/{sample}/Results.txt"
     message:"Shortstack analysis of {wildcards.sample} using {params.genome} reference"
