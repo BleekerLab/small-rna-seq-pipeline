@@ -6,6 +6,7 @@ from helpers import extract_hairpin_name_and_sequence
 from helpers import collect_clusterfiles_path
 from helpers import converts_list_of_sequence_dictionary_to_fasta
 from helpers import add_blast_header_to_file
+from helpers import add_sample_name_to_shortstack_results
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -23,18 +24,21 @@ FQ_DIR = config["fastqdir"]
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
+
+SAMPLES = config["samples"]
+
 # ShortStack parameters
 SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
 ####################
 ## Desired outputs
 ####################
-SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.txt",sample=config["samples"])
+SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name.txt",sample = SAMPLES)
 
-MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample=config["samples"])
-HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample=config["samples"])
+MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES)
+HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES)
 
-BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample=config["samples"],type=["mature","hairpin"])
+BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAMPLES, type = ["mature","hairpin"])
 
 rule all:
     input:
@@ -50,6 +54,26 @@ rule all:
 # Rules
 #######
 
+
+####################################################
+# Produce a concatenated unique Shortstack dataframe
+####################################################
+
+
+rule add_sample_name_to_shortstack_results:
+    input:
+        RES_DIR + "shortstack/{sample}/Results.txt"
+    output:
+        RES_DIR + "shortstack/{sample}/Results.with_sample_name.txt"
+    message: "Add {wildcards.sample} name to {wildcards.sample} Shortstack dataframe"
+    params:
+        sample_name = "{sample}"
+    run:
+        add_sample_name_to_shortstack_results(
+            path_to_shortstack_results = input[0],
+            sample_name = wildcards.sample,
+            outfile = output[0]
+            )
 
 ##################
 # mirbase analysis
@@ -152,7 +176,7 @@ rule extract_mature_mirna_fasta_file:
         mirnas_dict = df_mirnas["MajorRNA"].to_dict()
         # convert to fasta format
         with open(output[0],"w") as fileout:
-            for name,sequence in mirnas_dict.items():
+            for name, sequence in mirnas_dict.items():
                 fileout.write(">" + name + "\n" + sequence + "\n")
 
 ######################

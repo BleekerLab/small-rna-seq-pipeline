@@ -108,3 +108,19 @@ def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
     df = pd.read_csv(blast_file_without_header,sep="\t",header=None)
     df.columns = blast_header
     df.to_csv(blast_file_with_header,sep="\t",header=True,index=False)
+
+
+
+def add_sample_name_to_shortstack_results(
+    path_to_shortstack_results,
+    sample_name,
+    outfile):
+    """
+    Takes a "Results.txt" dataframe as produced by Shorstack.
+    Add the sample name as a new column (sample name is repeated N times (number of rows))
+    Returns a pandas dataframe as specified by outfile
+    """
+    df = pd.read_csv(path_to_shortstack_results,sep="\t")
+    df["sample"] = sample_name
+    df.to_csv(outfile, sep="\t", header=True, index=False)
+
