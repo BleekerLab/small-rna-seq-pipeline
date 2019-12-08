@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from functools import reduce
-
+from Bio import SeqIO
 
 # 
 
@@ -113,14 +113,64 @@ def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
 
 def add_sample_name_to_shortstack_results(
     path_to_shortstack_results,
-    sample_name,
-    outfile):
+    sample_name):
     """
-    Takes a "Results.txt" dataframe as produced by Shorstack.
+    Takes a "Results.txt" dataframe as produced by Shortstack.
     Add the sample name as a new column (sample name is repeated N times (number of rows))
     Returns a pandas dataframe as specified by outfile
     """
     df = pd.read_csv(path_to_shortstack_results,sep="\t")
     df["sample"] = sample_name
-    df.to_csv(outfile, sep="\t", header=True, index=False)
+    return df
 
+
+def make_dataframe_from_hairpin_fasta_file(hairpin_fasta_file):
+    """
+    This function will one fasta file containing all hairpins from one sample. 
+    It will make a Pandas dataframe with 2 columns:
+      * column 1: the hairpin sequence.
+      * column 2: the sample name from which it has been extracted from.
+    """
+    with open(hairpin_fasta_file,"r") as filin:
+        hairpins = [hairpin for hairpin in SeqIO.parse(filin,"fasta")]
+    
+    hairpin_identifiers = [str(hairpin.id) for hairpin in hairpins]    
+    hairpin_sequences = [str(hairpin.seq) for hairpin in hairpins]
+    
+    df = pd.DataFrame(list(zip(hairpin_sequences,hairpin_identifiers)), columns=["hairpin","Name"])
+
+    return df
+
+def add_hairpin_sequence_to_shortstack_results(
+    shortstack_results_dataframe,
+    hairpin_fasta_file):
+    """
+    Add the hairpin sequence (taken from the sample hairpin fasta file) to the Shorstack dataframe.
+    It uses the "Name" column as the common key for the left merge.
+    """
+    hairpin_df = make_dataframe_from_hairpin_fasta_file(hairpin_fasta_file)
+
+    df = pd.merge(shortstack_results_dataframe,
+                 hairpin_df,
+                how="left",
+                on="Name") # cluster name
+
+    return df
+
+
+def add_sample_name_and_hairpin_seq_to_shortstack(path_to_shortstack_results, sample_name, hairpin_fasta_file, outfile):
+    """
+    Takes a Shortstack Results.txt file, a sample name and a hairpin fasta file. 
+    It returns a Shortstack result file with two additional columns (sample, hairpin) that contains the 
+    sample name and hairpin sequences. 
+
+    """
+    # add sample name
+    df_with_name = pd.read_csv(path_to_shortstack_results,sep="\t")
+    df_with_name["sample"] = sample_name
+    
+    # add hairpin sequence
+    df_with_name_and_hairpin = add_hairpin_sequence_to_shortstack_results(df_with_name, hairpin_fasta_file)
+
+    # write to file
+    df_with_name_and_hairpin.to_csv(outfile, index=False, header=True, na_rep = "NaN")

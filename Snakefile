@@ -6,7 +6,7 @@ from helpers import extract_hairpin_name_and_sequence
 from helpers import collect_clusterfiles_path
 from helpers import converts_list_of_sequence_dictionary_to_fasta
 from helpers import add_blast_header_to_file
-from helpers import add_sample_name_to_shortstack_results
+from helpers import add_sample_name_and_hairpin_seq_to_shortstack
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -33,7 +33,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
-SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name.txt",sample = SAMPLES)
+SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv",sample = SAMPLES)
 
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES)
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES)
@@ -55,23 +55,22 @@ rule all:
 #######
 
 
-####################################################
-# Produce a concatenated unique Shortstack dataframe
-####################################################
+#############################################
+# Produce a concatenated Shortstack dataframe
+#############################################
 
-
-rule add_sample_name_to_shortstack_results:
+rule add_sample_name_and_hairpin_seq_to_shortstack:
     input:
-        RES_DIR + "shortstack/{sample}/Results.txt"
+        RES_DIR + "shortstack/{sample}/Results.txt", 
+        RES_DIR + "fasta/{sample}.hairpin.fasta"
     output:
-        RES_DIR + "shortstack/{sample}/Results.with_sample_name.txt"
-    message: "Add {wildcards.sample} name to {wildcards.sample} Shortstack dataframe"
-    params:
-        sample_name = "{sample}"
+        RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv"
+    message: "Add sample name and discovered hairpin sequences to {wildcards.sample} Shortstack dataframe"
     run:
-        add_sample_name_to_shortstack_results(
+        add_sample_name_and_hairpin_seq_to_shortstack(
             path_to_shortstack_results = input[0],
             sample_name = wildcards.sample,
+            hairpin_fasta_file = input[1],
             outfile = output[0]
             )
 
@@ -126,7 +125,6 @@ rule extract_hairpin_fasta_file:
             l = [extract_hairpin_name_and_sequence(cluster,sample) for cluster in collect_clusterfiles_path(params[0])]
             # writes this dictionary to a fasta file
             converts_list_of_sequence_dictionary_to_fasta(l,output[0])
-
 
 rule blast_mature_mirna_against_mirbase:
     input:
