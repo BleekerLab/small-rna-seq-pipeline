@@ -214,3 +214,18 @@ def extract_mature_micrornas_from_concatenated_shortstack_file(concatenated_shor
         for cluster_id, major_rna_seq in zip(cluster_ids, major_rna_seqs):
                 fileout.write(">" + cluster_id + "\n" + major_rna_seq + "\n")
 
+
+def extract_mature_mirna_fasta_file_from_shortstack_file(path_to_shortstack_file, out_fasta_file):
+    """
+    Takes a Shortstack Results.txt file and
+    output a fasta file with all predicted mature miRNAs
+    """
+    # converts all mature miRNAs into a dictionary 
+    df = pd.read_csv(path_to_shortstack_file, sep="\t", index_col=1)
+    df_mirnas = df[df["MIRNA"] == "Y"]
+    mirnas_dict = df_mirnas["MajorRNA"].to_dict()
+
+    # convert to fasta format
+    with open(out_fasta_file, "w") as fileout:
+        for name, sequence in mirnas_dict.items():
+            fileout.write(">" + name + "\n" + sequence + "\n")
