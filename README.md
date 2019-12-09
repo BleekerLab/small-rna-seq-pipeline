@@ -97,3 +97,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## References
 * Bioawk tutorial: https://isugenomics.github.io/bioinformatics-workbook/Appendix/bioawk-basics
+* Vienna RNAfold tutorial:  https://www.tbi.univie.ac.at/RNA/tutorial/#sec3

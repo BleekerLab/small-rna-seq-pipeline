@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - viennarna=2.4.14

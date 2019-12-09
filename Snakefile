@@ -58,6 +58,8 @@ SHORTSTACK_CONCAT = RES_DIR + "concatenated_shortstacks.tsv"
 MIRNAS = [expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES), RES_DIR + "mature_mirnas.fasta"]
 HAIRPINS = [expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES), RES_DIR + "hairpins.fasta"]
 
+MFEs = expand(RES_DIR + "hairpins.mfe", sample=SAMPLES) # minimal free energy secondary structures of hairpins
+
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAMPLES, type = ["mature","hairpin"])
 
 rule all:
@@ -66,7 +68,8 @@ rule all:
         SHORTSTACK_CONCAT,
         MIRNAS,
         HAIRPINS,
-        BLAST
+        BLAST, 
+        MFEs
     message:"All done! Removing intermediate files"
     shell:
         "rm -rf {WORKING_DIR}" # removes unwanted intermediate files
@@ -74,6 +77,26 @@ rule all:
 #######
 # Rules
 #######
+
+#########################
+# Folding of RNA hairpins
+#########################
+
+rule rna_fold: 
+    input:
+        hairpins = RES_DIR + "hairpins.fasta"
+    output: 
+        mfe = RES_DIR + "hairpins.mfe"
+    message: "Calculate minimum free energy secondary structures of hairpins"
+    conda:
+        "envs/viennarna.yaml"
+    params:
+        temp_name = "hairpins.mfe"
+    threads: 10
+    shell:
+        "RNAfold --jobs={threads} --infile={input.hairpins} --outfile={params.temp_name};"
+        "mv {params.temp_name} {RES_DIR}{params.temp_name};"
+        "rm cluster*"
 
 #############################################
 # Produce a concatenated Shortstack dataframe
