@@ -2,6 +2,7 @@ import os
 import subprocess
 from snakemake.utils import min_version
 import pandas as pd
+
 from helpers import extract_hairpin_name_and_sequence
 from helpers import collect_clusterfiles_path
 from helpers import converts_list_of_sequence_dictionary_to_fasta
@@ -10,9 +11,19 @@ from helpers import add_sample_name_and_hairpin_seq_to_shortstack
 from helpers import concatenate_shortstacks_and_assign_unique_cluster_ids
 from helpers import extract_mature_micrornas_from_concatenated_shortstack_file
 from helpers import extract_hairpins_from_concatenated_shortstack_file
+from helpers import extract_mature_mirna_fasta_file_from_shortstack_file
+
+
+###############################
+# OS and related configurations
+###############################
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
+
+# this container defines the underlying OS for each job when using the workflow
+# with --use-conda --use-singularity
+singularity: "docker://continuumio/miniconda3"
 
 #########################
 ## Pipeline configuration
@@ -23,12 +34,17 @@ wildcard_constraints:
   dataset="[Aa-Zz0-9]+"
 
 # directories
-FQ_DIR = config["fastqdir"]
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
+# get list of samples
+samples_df = pd.read_csv("samples.tsv", sep="\t").set_index("sample")
+SAMPLES = samples_df.index.values.tolist()
 
-SAMPLES = config["samples"]
+# get fastq file
+def get_fastq_file(wildcards):
+    fastq_file = samples_df.loc[wildcards.sample,"fastq"]
+    return fastq_file
 
 # ShortStack parameters
 SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
@@ -59,7 +75,6 @@ rule all:
 # Rules
 #######
 
-
 #############################################
 # Produce a concatenated Shortstack dataframe
 #############################################
@@ -86,7 +101,7 @@ rule concatenate_shorstacks_and_assign_unique_cluster_ids:
         dfs = [pd.read_csv(f,sep="\t") for f in input]
         df = pd.concat(dfs)
         df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
-        df.to_csv(output[0], sep="\t", index=False, header=True)
+        df.to_csv(output[0], sep="\t", index=False, header=True, na_rep = "NaN")
 
 
 rule add_sample_name_and_hairpin_seq_to_shortstack:
@@ -192,17 +207,16 @@ rule make_mirbase_blastdb:
         "makeblastdb -in {input.mature} -dbtype nucl;"
         "makeblastdb -in {input.hairpin} -dbtype nucl"
 
-rule extract_mature_mirna_fasta_file:
+rule extract_mature_mirna_fasta_file_from_shortstack_file:
     input:
         RES_DIR + "shortstack/{sample}/Results.txt"
     output:
         RES_DIR + "fasta/{sample}.mature_mirnas.fasta"
     message: "extracting mature miRNA fasta file of {wildcards.sample}"
     run:
-        df = pd.read_csv(input[0],sep="\t",index_col=1)
-        df_mirnas = df[df["MIRNA"] == "Y"]
-        mirnas_dict = df_mirnas["MajorRNA"].to_dict()
-        # convert to fasta format
+        extract_mature_mirna_fasta_file_from_shortstack_file(
+            path_to_shortstack_file = input[0],
+            out_fasta_file = output[0])
 
 
 
@@ -254,7 +268,8 @@ rule keep_reads_shorter_than:
 
 rule trimmomatic:
     input:
-        FQ_DIR + "{sample}.fastq"
+        get_fastq_file
+#        FQ_DIR + "{sample}.fastq"
     output:
         WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
     message: "trimming {wildcards.sample} on quality and length"
