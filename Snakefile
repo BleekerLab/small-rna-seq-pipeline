@@ -7,6 +7,7 @@ from helpers import collect_clusterfiles_path
 from helpers import converts_list_of_sequence_dictionary_to_fasta
 from helpers import add_blast_header_to_file
 from helpers import add_sample_name_and_hairpin_seq_to_shortstack
+from helpers import concatenate_shortstacks_and_assign_unique_cluster_ids
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -34,6 +35,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ## Desired outputs
 ####################
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv",sample = SAMPLES)
+SHORTSTACK_CONCAT = RES_DIR + "concatenated_shortstacks.tsv"
 
 MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES)
 HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES)
@@ -43,6 +45,7 @@ BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAM
 rule all:
     input:
         SHORTSTACK,
+        SHORTSTACK_CONCAT,
         MIRNAS,
         HAIRPINS,
         BLAST
@@ -58,6 +61,19 @@ rule all:
 #############################################
 # Produce a concatenated Shortstack dataframe
 #############################################
+
+rule concatenate_shorstacks_and_assign_unique_cluster_ids:
+    input:
+        expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv", sample=SAMPLES)
+    output:
+        RES_DIR + "concatenated_shortstacks.tsv"
+    message: "Row-bind all Shortstacks and assign a unique id to each sRNA cluster"
+    run: 
+        dfs = [pd.read_csv(f,sep="\t") for f in input]
+        df = pd.concat(dfs)
+        df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
+        df.to_csv(output[0], sep="\t", index=False, header=True)
+
 
 rule add_sample_name_and_hairpin_seq_to_shortstack:
     input:

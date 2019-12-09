@@ -174,3 +174,13 @@ def add_sample_name_and_hairpin_seq_to_shortstack(path_to_shortstack_results, sa
 
     # write to file
     df_with_name_and_hairpin.to_csv(outfile, index=False, header=True, na_rep = "NaN")
+
+
+def concatenate_shortstacks_and_assign_unique_cluster_ids(list_of_shortstack_files,
+                                                         outfile = "shortstack_concatenated.tsv"):
+    list_of_shortstack_dfs = [pd.read_csv(f,sep="\t") for f in list_of_shortstack_files]
+    df = pd.concat(list_of_shortstack_dfs)
+    df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
+    df.to_csv(outfile, sep="\t", index=False, header=True)
+
+
