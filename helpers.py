@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from functools import reduce
-
+from Bio import SeqIO
 
 # 
 
@@ -108,3 +108,109 @@ def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
     df = pd.read_csv(blast_file_without_header,sep="\t",header=None)
     df.columns = blast_header
     df.to_csv(blast_file_with_header,sep="\t",header=True,index=False)
+
+
+
+def add_sample_name_to_shortstack_results(
+    path_to_shortstack_results,
+    sample_name):
+    """
+    Takes a "Results.txt" dataframe as produced by Shortstack.
+    Add the sample name as a new column (sample name is repeated N times (number of rows))
+    Returns a pandas dataframe as specified by outfile
+    """
+    df = pd.read_csv(path_to_shortstack_results,sep="\t")
+    df["sample"] = sample_name
+    return df
+
+
+def make_dataframe_from_hairpin_fasta_file(hairpin_fasta_file):
+    """
+    This function will one fasta file containing all hairpins from one sample. 
+    It will make a Pandas dataframe with 2 columns:
+      * column 1: the hairpin sequence.
+      * column 2: the sample name from which it has been extracted from.
+    """
+    with open(hairpin_fasta_file,"r") as filin:
+        hairpins = [hairpin for hairpin in SeqIO.parse(filin,"fasta")]
+    
+    hairpin_identifiers = [str(hairpin.id) for hairpin in hairpins]    
+    hairpin_sequences = [str(hairpin.seq) for hairpin in hairpins]
+    
+    df = pd.DataFrame(list(zip(hairpin_sequences,hairpin_identifiers)), columns=["hairpin","Name"])
+
+    return df
+
+def add_hairpin_sequence_to_shortstack_results(
+    shortstack_results_dataframe,
+    hairpin_fasta_file):
+    """
+    Add the hairpin sequence (taken from the sample hairpin fasta file) to the Shorstack dataframe.
+    It uses the "Name" column as the common key for the left merge.
+    """
+    hairpin_df = make_dataframe_from_hairpin_fasta_file(hairpin_fasta_file)
+
+    df = pd.merge(shortstack_results_dataframe,
+                 hairpin_df,
+                how="left",
+                on="Name") # cluster name
+
+    return df
+
+
+def add_sample_name_and_hairpin_seq_to_shortstack(path_to_shortstack_results, sample_name, hairpin_fasta_file, outfile):
+    """
+    Takes a Shortstack Results.txt file, a sample name and a hairpin fasta file. 
+    It returns a Shortstack result file with two additional columns (sample, hairpin) that contains the 
+    sample name and hairpin sequences. 
+
+    """
+    # add sample name
+    df_with_name = pd.read_csv(path_to_shortstack_results,sep="\t")
+    df_with_name["sample"] = sample_name
+    
+    # add hairpin sequence
+    df_with_name_and_hairpin = add_hairpin_sequence_to_shortstack_results(df_with_name, hairpin_fasta_file)
+
+    # write to file
+    df_with_name_and_hairpin.to_csv(outfile, sep="\t", index=False, header=True, na_rep = "NaN")
+
+
+def concatenate_shortstacks_and_assign_unique_cluster_ids(list_of_shortstack_files,
+                                                         outfile = "shortstack_concatenated.tsv"):
+    list_of_shortstack_dfs = [pd.read_csv(f,sep="\t") for f in list_of_shortstack_files]
+    df = pd.concat(list_of_shortstack_dfs)
+    df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
+    df.to_csv(outfile, sep="\t", index=False, header=True)
+
+def extract_hairpins_from_concatenated_shortstack_file(concatenated_shortstack_file, outfile):
+    """
+    Extract the hairpin sequences from the concatenated shortstack dataframe.
+    The hairpin identifier is a unique cluster identifier.
+    """
+    concatenated_shortstack_df = pd.read_csv(concatenated_shortstack_file, sep="\t")
+    df_with_only_mirnas = concatenated_shortstack_df.query(" MIRNA == 'Y' ") # only true MIRNAs have a hairpin sequence
+
+    cluster_ids = df_with_only_mirnas["cluster_unique_id"]
+    hairpin_seqs = df_with_only_mirnas["hairpin"]
+
+    with open(outfile, "w") as fileout:
+        for cluster_id, hairpin_seq in zip(cluster_ids, hairpin_seqs):
+                fileout.write(">" + cluster_id + "\n" + hairpin_seq + "\n")
+
+
+def extract_mature_micrornas_from_concatenated_shortstack_file(concatenated_shortstack_file, outfile):
+    """
+    Extract the mature miRNA sequences from the concatenated shortstack dataframe.
+    The mature miRNA identifier is a unique cluster identifier.
+    """
+    concatenated_shortstack_df = pd.read_csv(concatenated_shortstack_file, sep="\t")
+    df_with_only_mirnas = concatenated_shortstack_df.query(" MIRNA == 'Y' ") # only true MIRNAs are kept
+
+    cluster_ids = df_with_only_mirnas["cluster_unique_id"]
+    major_rna_seqs = df_with_only_mirnas["MajorRNA"]
+
+    with open(outfile, "w") as fileout:
+        for cluster_id, major_rna_seq in zip(cluster_ids, major_rna_seqs):
+                fileout.write(">" + cluster_id + "\n" + major_rna_seq + "\n")
+
