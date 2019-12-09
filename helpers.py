@@ -173,7 +173,7 @@ def add_sample_name_and_hairpin_seq_to_shortstack(path_to_shortstack_results, sa
     df_with_name_and_hairpin = add_hairpin_sequence_to_shortstack_results(df_with_name, hairpin_fasta_file)
 
     # write to file
-    df_with_name_and_hairpin.to_csv(outfile, index=False, header=True, na_rep = "NaN")
+    df_with_name_and_hairpin.to_csv(outfile, sep="\t", index=False, header=True, na_rep = "NaN")
 
 
 def concatenate_shortstacks_and_assign_unique_cluster_ids(list_of_shortstack_files,
