@@ -183,4 +183,34 @@ def concatenate_shortstacks_and_assign_unique_cluster_ids(list_of_shortstack_fil
     df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
     df.to_csv(outfile, sep="\t", index=False, header=True)
 
+def extract_hairpins_from_concatenated_shortstack_file(concatenated_shortstack_file, outfile):
+    """
+    Extract the hairpin sequences from the concatenated shortstack dataframe.
+    The hairpin identifier is a unique cluster identifier.
+    """
+    concatenated_shortstack_df = pd.read_csv(concatenated_shortstack_file, sep="\t")
+    df_with_only_mirnas = concatenated_shortstack_df.query(" MIRNA == 'Y' ") # only true MIRNAs have a hairpin sequence
+
+    cluster_ids = df_with_only_mirnas["cluster_unique_id"]
+    hairpin_seqs = df_with_only_mirnas["hairpin"]
+
+    with open(outfile, "w") as fileout:
+        for cluster_id, hairpin_seq in zip(cluster_ids, hairpin_seqs):
+                fileout.write(">" + cluster_id + "\n" + hairpin_seq + "\n")
+
+
+def extract_mature_micrornas_from_concatenated_shortstack_file(concatenated_shortstack_file, outfile):
+    """
+    Extract the mature miRNA sequences from the concatenated shortstack dataframe.
+    The mature miRNA identifier is a unique cluster identifier.
+    """
+    concatenated_shortstack_df = pd.read_csv(concatenated_shortstack_file, sep="\t")
+    df_with_only_mirnas = concatenated_shortstack_df.query(" MIRNA == 'Y' ") # only true MIRNAs are kept
+
+    cluster_ids = df_with_only_mirnas["cluster_unique_id"]
+    major_rna_seqs = df_with_only_mirnas["MajorRNA"]
+
+    with open(outfile, "w") as fileout:
+        for cluster_id, major_rna_seq in zip(cluster_ids, major_rna_seqs):
+                fileout.write(">" + cluster_id + "\n" + major_rna_seq + "\n")
 

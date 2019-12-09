@@ -8,6 +8,8 @@ from helpers import converts_list_of_sequence_dictionary_to_fasta
 from helpers import add_blast_header_to_file
 from helpers import add_sample_name_and_hairpin_seq_to_shortstack
 from helpers import concatenate_shortstacks_and_assign_unique_cluster_ids
+from helpers import extract_mature_micrornas_from_concatenated_shortstack_file
+from helpers import extract_hairpins_from_concatenated_shortstack_file
 
 ##### set minimum snakemake version #####
 min_version("5.4.3")
@@ -37,8 +39,8 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv",sample = SAMPLES)
 SHORTSTACK_CONCAT = RES_DIR + "concatenated_shortstacks.tsv"
 
-MIRNAS = expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES)
-HAIRPINS = expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES)
+MIRNAS = [expand(RES_DIR + "fasta/{sample}.mature_mirnas.fasta",sample = SAMPLES), RES_DIR + "mature_mirnas.fasta"]
+HAIRPINS = [expand(RES_DIR + "fasta/{sample}.hairpin.fasta",sample = SAMPLES), RES_DIR + "hairpins.fasta"]
 
 BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAMPLES, type = ["mature","hairpin"])
 
@@ -61,6 +63,18 @@ rule all:
 #############################################
 # Produce a concatenated Shortstack dataframe
 #############################################
+
+rule extract_fasta_files_for_hairpins_and_mature_miRNAs_from_concatenated_shortstack: 
+    input:
+        RES_DIR + "concatenated_shortstacks.tsv" 
+    output:
+        hairpins = RES_DIR + "hairpins.fasta",
+        mature = RES_DIR + "mature_mirnas.fasta"
+    message: "extract hairpins and mature miRNAs from {input}"
+    run:
+        extract_hairpins_from_concatenated_shortstack_file(input[0], output[0])
+        extract_mature_micrornas_from_concatenated_shortstack_file(input[0], output[1])
+
 
 rule concatenate_shorstacks_and_assign_unique_cluster_ids:
     input:
@@ -189,9 +203,8 @@ rule extract_mature_mirna_fasta_file:
         df_mirnas = df[df["MIRNA"] == "Y"]
         mirnas_dict = df_mirnas["MajorRNA"].to_dict()
         # convert to fasta format
-        with open(output[0],"w") as fileout:
-            for name, sequence in mirnas_dict.items():
-                fileout.write(">" + name + "\n" + sequence + "\n")
+
+
 
 ######################
 ## Shortstack analysis
