@@ -34,8 +34,8 @@ These instructions will get you a copy of the project up and running on your loc
 ### Create a Conda environment
 This Snakemake pipeline make use of the [conda package manager](https://docs.conda.io/en/latest/) to install softwares and dependencies.
 1. First, make sure you have conda installed on your system. Use [Miniconda3](https://docs.conda.io/en/latest/miniconda.html) and follow the [installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).  
-2. Using `conda`, create a virtual environment called `snakemake` to install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda env create -f envs/snakemake.yaml`. This will install `snakemake version 5.4.3` and `pandas version 0.25.0` in a new environment called __snakemake__.
-3. Activate this environment using: `source activate snakemake`
+2. Using `conda`, create a virtual environment called `snakemake` to install Snakemake (version 5.4.3 or higher) by executing the following code in a Shell window: `conda env create -f envs/snakemake.yaml`. This will install `snakemake version 5.4.3` and `pandas version 0.25.0` in a new environment called __smallrna__.
+3. Activate this environment using: `source activate smallrna`
 4. You can now run the pipeline (see below) since snakemake will use conda to install softwares and packages for each rule.  
 
 If you have set up `conda` and created the `snakemake` environment, that's all you need to do! Snakemake will take care of the rest of the software and package installation specified in the _yaml_ files in the `envs/` folder.

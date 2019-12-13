@@ -1,4 +1,4 @@
-name: snakemake
+name: small-rna
 channels:
   - bioconda
   - conda-forge  
