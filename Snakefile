@@ -255,7 +255,7 @@ rule shortstack:
     message:"Shortstack analysis of {wildcards.sample} using {params.genome} reference"
     params:
         resdir = RES_DIR + "shortstack/{sample}/",
-        genome = lambda wildcards: config["refs"]["genomes"][wildcards.sample]
+        genome = lambda wildcards: samples_df.loc[wildcards.sample,"genome"]
     threads: 10
     conda:
         "envs/shortstack.yaml"
