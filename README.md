@@ -1,7 +1,7 @@
 # The small RNA-Seq pipeline 
 
 - [Summary](#summary)
-- |[Installation](#installation)
+- [Installation](#installation)
   * [Create a Conda environment](#create-a-conda-environment)
   * [Dependencies](#dependencies)
 - [Usage](#usage)
