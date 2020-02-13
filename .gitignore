@@ -16,3 +16,4 @@ Rplots.pdf
 *.nsi
 *.nsq
 *__pycache__
+refs/
