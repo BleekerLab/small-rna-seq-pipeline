@@ -1,4 +1,4 @@
-name: small-rna
+name: small
 channels:
   - bioconda
   - conda-forge  
