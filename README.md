@@ -59,7 +59,8 @@ A small dataset is available in `test/` to run some tests rapidly. It will use t
 To run the test, open a new Shell window and:
 1. Activate your working environment: `source activate snakemake`
 2. Type `snakemake --use-conda -np` for a dry run. No analysis is run but it checks that the Directed Acyclic Graph of jobs is OK (input and output from each rule chained to each other).
-3. For the real run, type `snakemake --use-conda`
+3. For the real run, type `snakemake --use-conda --cores N` where `N` is the number of CPUs that you want to use (default = 1). 
+
 
 ### Samples
 A `samples.tsv` file can be used to specify sample names, their corresponding genomic reference to use and the location of their sequencing file.
