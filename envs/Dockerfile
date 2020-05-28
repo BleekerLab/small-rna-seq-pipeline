@@ -11,5 +11,7 @@ COPY environment.yml .
 RUN conda env create -f environment.yml
 
 # Make RUN commands use the new environment and run Snakemake
-SHELL ["conda", "run", "-n", "small", "/bin/bash", "-c", "Snakemake"]
+ENTRYPOINT ["conda", "run", "-n", "small", "/bin/bash", "-c", "snakemake"]
+
+
 
