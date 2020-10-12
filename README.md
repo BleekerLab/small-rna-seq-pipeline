@@ -99,3 +99,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## References
 * Bioawk tutorial: https://isugenomics.github.io/bioinformatics-workbook/Appendix/bioawk-basics
 * Vienna RNAfold tutorial:  https://www.tbi.univie.ac.at/RNA/tutorial/#sec3
+* miRTop: from BAM files to GFF3 files (and conversion to other formats such as Fasta etc.): https://academic.oup.com/bioinformatics/article/36/3/698/5556118
