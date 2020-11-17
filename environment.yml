@@ -7,8 +7,8 @@ dependencies:
   - bowtie = 1.2.0
   - shortstack = 3.8.5  
   - bowtie = 1.2.0
-  - trimmomatic=0.38
-  - snakemake-minimal = 5.4.3 
+  - fastp=0.20.0
+  - snakemake = 5.20.0 
   - biopython = 1.74
   - pandas = 0.25.0
   - bioawk = 1.0

@@ -10,8 +10,10 @@ LABEL author="l.fokkens@uva.nl" \
 COPY environment.yml .
 RUN conda env create -f environment.yml
 
+# Change working directory 
+
 # Make RUN commands use the new environment and run Snakemake
-ENTRYPOINT ["conda", "run", "-n", "small", "/bin/bash", "-c", "snakemake"]
+ENTRYPOINT ["conda", "run", "-n", "small", "/bin/bash"]
 
 
 

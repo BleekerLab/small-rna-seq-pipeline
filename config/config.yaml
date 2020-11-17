@@ -2,7 +2,7 @@
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
 
-samples: "samples.tsv"
+samples: "config/ samples.tsv"
 
 # genomic and other references
 refs:
@@ -32,7 +32,7 @@ shortstack:
   dicermax:   "--dicermax 24"           # maximum size of a Dicer-processed small RNA.
   foldsize:   "--foldsize 1000"         # size of genomic RNA segments for folding for MIRNA search
   pad:        "--pad 100"               # clusters of sRNAs merged if distance less/equal to pad value
-  mincov:     "--mincov 0.5rpm"           # threshold of X reads per million for cluster detection
+  mincov:     "--mincov 0.5rpm"         # threshold of X reads per million for cluster detection
 
 # small RNA lengths filtering
 length:

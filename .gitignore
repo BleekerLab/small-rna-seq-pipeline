@@ -17,3 +17,5 @@ Rplots.pdf
 *.nsq
 *__pycache__
 refs/
+test/
+count_sequence_length.ipynb

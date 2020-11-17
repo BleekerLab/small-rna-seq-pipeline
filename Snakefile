@@ -28,7 +28,7 @@ singularity: "docker://continuumio/miniconda3"
 #########################
 ## Pipeline configuration
 ##########################
-configfile: "config.yaml"
+configfile: "config/config.yaml"
 
 wildcard_constraints:
   dataset="[Aa-Zz0-9]+"
@@ -38,7 +38,7 @@ WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
 # get list of samples
-samples_df = pd.read_csv("samples.tsv", sep="\t").set_index("sample")
+samples_df = pd.read_csv("config/samples.tsv", sep="\t").set_index("sample")
 SAMPLES = samples_df.index.values.tolist()
 
 # get fastq file
@@ -292,7 +292,6 @@ rule keep_reads_shorter_than:
 rule trimmomatic:
     input:
         get_fastq_file
-#        FQ_DIR + "{sample}.fastq"
     output:
         WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
     message: "trimming {wildcards.sample} on quality and length"
