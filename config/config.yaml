@@ -2,13 +2,13 @@
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
 
-samples: "config/ samples.tsv"
+samples: "config/samples.tsv"
+
+# adapters related to sequencing
+fasta_adapters: "config/adapters.fasta"
 
 # genomic and other references
 refs:
-  genomes: 
-    C32.sub: "refs/S_lycopersicum_chromosomes.3.00.chrom1.fa"          # genome ref number 1
-    LA4024.sub: "refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fa"  # genome ref number 2
   mirbase:
     mature: "refs/mature.mirbase.release22.fa"
     hairpin: "refs/hairpin.mirbase.release22.fa"
@@ -39,10 +39,8 @@ length:
   min_length: "18" # will keep everything longer than
   max_length: "25" # will keep everything shorter than
 
-# trimmomatic parameters
-trimmomatic:
-  LeadMinTrimQual:        '10'       # Cut bases off the start of a read, if below threshold quality of
-  TrailMinTrimQual:       '3'        # Cut bases off the end of a read, if below threshold quality of
-  windowSize:             '4'        # Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15 (SLIDINGWINDOW:4:15)
-  avgMinQual:             '15'       # Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15 (SLIDINGWINDOW:4:15)
-  phred:                  '-phred33' # phred: for illumina >1.8 the quality score are encoded by phred33
+# fastp parameters
+fastp:
+  qualified_quality_phred: "15"     # Phred score threshold for a base to be qualified. >=Q15 is considered OK and qualified.
+  average_quality:         "0"      # if read average quality score <avg_qual, then this read/pair is discarded. Default 0 means no requirement (int [=0]) 
+

@@ -12,7 +12,7 @@ from helpers import concatenate_shortstacks_and_assign_unique_cluster_ids
 from helpers import extract_mature_micrornas_from_concatenated_shortstack_file
 from helpers import extract_hairpins_from_concatenated_shortstack_file
 from helpers import extract_mature_mirna_fasta_file_from_shortstack_file
-
+from helpers import create_df_of_seq_length_distributions
 
 ###############################
 # OS and related configurations
@@ -52,6 +52,8 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
+SEQ_DISTRI = RES_DIR + "seq_length_distribution.tsv"
+
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv",sample = SAMPLES)
 SHORTSTACK_CONCAT = RES_DIR + "concatenated_shortstacks.tsv"
 
@@ -64,13 +66,15 @@ BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAM
 
 rule all:
     input:
+        SEQ_DISTRI,
         SHORTSTACK,
         SHORTSTACK_CONCAT,
         MIRNAS,
         HAIRPINS,
         BLAST, 
         MFEs
-    message:"All done! Removing intermediate files"
+    message:
+        "All done! Removing intermediate files in {WORKING_DIR}."
     shell:
         "rm -rf {WORKING_DIR}" # removes unwanted intermediate files
 
@@ -270,6 +274,24 @@ rule shortstack:
         "cp -r {wildcards.sample}/* {params.resdir};"
         "rm -r {wildcards.sample};"
 
+
+###########################################################
+## Get read length distribution (before and after trimming)
+##########################################################
+
+rule read_length_distribution:
+    input: 
+        expand(WORKING_DIR + "trim/{sample}.trimmed.size.fastq", sample = SAMPLES)
+    output:
+        RES_DIR + "seq_length_distribution.tsv"
+    message: 
+        "Computing sequence length distribution for all samples"
+    params:
+        path_to_fastq_files = WORKING_DIR + "trim/"
+    run:
+        create_df_of_seq_length_distributions(path_to_fastq_files =  params.path_to_fastq_files, outfile = output[0])
+
+
 #############################
 ## Trim reads for all samples
 #############################
@@ -288,34 +310,24 @@ rule keep_reads_shorter_than:
         bioawk -c fastx '{{ length($seq) <= {params.max_length} }} {{print "@"$name; print $seq ;print "+";print $qual}}' {input} > {output}
         """
 
-
-rule trimmomatic:
+rule fastp:
     input:
         get_fastq_file
     output:
         WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
-    message: "trimming {wildcards.sample} on quality and length"
-    log:
-        RES_DIR + "logs/trimmomatic/{sample}.log"
-    params :
-        LeadMinTrimQual =           str(config['trimmomatic']['LeadMinTrimQual']),
-        TrailMinTrimQual =          str(config['trimmomatic']['TrailMinTrimQual']),
-        windowSize =                str(config['trimmomatic']['windowSize']),
-        avgMinQual =                str(config['trimmomatic']['avgMinQual']),
-        minReadLen =                str(config['length']['min_length']),
-        phred = 		            str(config["trimmomatic"]["phred"])
-    threads: 10
-    conda:
-        "envs/trimmomatic.yaml"
+        WORKING_DIR + "trimmed/{sample}.json",
+        WORKING_DIR + "trimmed/{sample}.html"
+    message:
+        "trimming {wildcards.sample} reads on quality and adapter presence"
+    params:
+        adapters_fasta = config["fasta_adapters"],
+        qualified_quality_phred = str(config["fastp"]["qualified_quality_phred"]),
+        average_quality = str(config["fastp"]["average_quality"])
     shell:
-        "trimmomatic SE {params.phred} -threads {threads} "
-        "{input} "
-        "{output} "
-        "LEADING:{params.LeadMinTrimQual} "
-        "TRAILING:{params.TrailMinTrimQual} "
-        "SLIDINGWINDOW:{params.windowSize}:{params.avgMinQual} "
-        "MINLEN:{params.minReadLen} &>{log}"
-
-#####
-## QC
-#####
+        "fastp -i {input} "
+        "--stdout "
+        "--json {output.json} "
+        "--json {output.html} "
+        "--qualified_quality_phred {params.qualified_quality_phred} "
+        "--average_qual {params.average_quality} "
+        "--adapter_fasta {params.adapters_fasta} > {output}"
