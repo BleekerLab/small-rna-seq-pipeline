@@ -52,6 +52,8 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
+QC = RES_DIR + "multiqc_report.html"
+
 SEQ_DISTRI = RES_DIR + "seq_length_distribution.tsv"
 
 SHORTSTACK = expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv",sample = SAMPLES)
@@ -314,9 +316,9 @@ rule fastp:
     input:
         get_fastq_file
     output:
-        WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
-        WORKING_DIR + "trimmed/{sample}.json",
-        WORKING_DIR + "trimmed/{sample}.html"
+        fastq = WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
+        json = WORKING_DIR + "trimmed/{sample}.json",
+        html = WORKING_DIR + "trimmed/{sample}.html"
     message:
         "trimming {wildcards.sample} reads on quality and adapter presence"
     params:
@@ -327,7 +329,7 @@ rule fastp:
         "fastp -i {input} "
         "--stdout "
         "--json {output.json} "
-        "--json {output.html} "
+        "--html {output.html} "
         "--qualified_quality_phred {params.qualified_quality_phred} "
         "--average_qual {params.average_quality} "
-        "--adapter_fasta {params.adapters_fasta} > {output}"
+        "--adapter_fasta {params.adapters_fasta} > {output.fastq}"

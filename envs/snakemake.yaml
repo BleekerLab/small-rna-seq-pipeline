@@ -1,8 +1,0 @@
-name: small
-channels:
-  - bioconda
-  - conda-forge  
-dependencies:
-  - snakemake-minimal = 5.4.3 
-  - biopython = 1.74
-  - pandas = 0.25.0

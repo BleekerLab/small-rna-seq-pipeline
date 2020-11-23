@@ -96,7 +96,13 @@ def converts_list_of_sequence_dictionary_to_fasta(list_of_sequence_dictionaries,
 def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
     """takes a blast result file (outformat 6 not customized) and add a header
     """
-    blast_header = ["qseqid",
+    if os.path.getsize(blast_file_without_header) == 0:
+        with open(blast_file_with_header, "w") as fileout:
+            fileout.write("No blast hit. Check the miRBase databases you have used (correct species?).\n")
+            fileout.write("If you run the pipeline on subset test files, you can ignore this message.") 
+    
+    else: 
+        blast_header = ["qseqid",
                 "subject_id",
                 "pct_identity",
                 "aln_length",
@@ -108,9 +114,9 @@ def add_blast_header_to_file(blast_file_without_header,blast_file_with_header):
                 "s_end",
                 "e_value",
                 "bit_score"]
-    df = pd.read_csv(blast_file_without_header,sep="\t",header=None)
-    df.columns = blast_header
-    df.to_csv(blast_file_with_header,sep="\t",header=True,index=False)
+        df = pd.read_csv(blast_file_without_header,sep="\t",header=None)
+        df.columns = blast_header
+        df.to_csv(blast_file_with_header,sep="\t",header=True,index=False)
 
 
 
