@@ -1,5 +1,5 @@
 sample	fastq	genome
-C32.sub	fastq/C32.sub.fastq	refs/S_lycopersicum_chromosomes.3.00.chrom1.fa
-LA4024.sub.fastq	fastq/LA4024.sub.fastq	refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fa
+C32_sub	fastq/C32.sub.fastq	refs/S_lycopersicum_chromosomes.3.00.chrom1.fa
+LA4024_sub	fastq/LA4024.sub.fastq	refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fa
 Moneymaker_01	fastq/S04_S4_R1_001.sub.fastq.gz	refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fa
 Moneymaker_04	fastq/S05_S5_R1_001.sub.fastq.gz	refs/S_lycopersicum_chromosomes.4.00.fa.chrom1.fa

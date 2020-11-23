@@ -8,6 +8,42 @@ import os
 from pathlib import Path
 import gzip
 from functools import reduce
+import re
+import sys
+
+def check_samples_tsv_file(sample_tsv_file = "config/samples.tsv"):
+    """
+    A function to check the validity of the input sample file provided. 
+    
+    Checks implemented:
+      1) Checks whether the column are properly named. If not, will rename columns. 
+          column1 => sample
+          column2 => fastq
+          column3 => genome
+      2) Checks whether a dot (.) is present in the 'sample' column of the provided sample file. 
+         If that is the case, stop the pipeline execution and returns an explicit error message. 
+         This is to provide compatibility with multiQC.
+    """
+    
+    # check naming of columns
+    df = pd.read_csv(sample_tsv_file, sep="\t")
+    colnames = df.columns.to_list()
+    assert colnames[0] == "sample", "Your first column in your samples.tsv file should be named 'sample' "
+    assert colnames[1] == "fastq", "Your first column in your samples.tsv file should be named 'fastq' "
+    assert colnames[2] == "genome", "Your first column in your samples.tsv file should be named 'genome' "
+
+    # check if sample names have a dot inside their name
+    pattern_to_find = re.compile("\.")
+    df = df.set_index("sample")
+    for sample_name in list(df.index):
+        if bool(pattern_to_find.search(sample_name)) == True:
+            sys.exit("Please replace '.' (dots) in your sample names with another character '_' (underscore")
+        else:
+            return(df)
+        
+
+
+
 
 def create_microrna_dataframe_from_shortstack_results(list_of_sample_names,list_of_shortstack_result_files,how="outer",outfile="micrornas.merged.tsv"):
     """
