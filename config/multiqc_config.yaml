@@ -1,0 +1,8 @@
+# Configuration file for multiQC report tool
+# Documentation: https://multiqc.info/docs/#configuring-multiqc
+
+
+# This looks for patterns 
+extra_fn_clean_exts:
+    - type: 'truncate'
+      pattern: '.fastq'

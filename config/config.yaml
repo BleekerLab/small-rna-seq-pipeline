@@ -2,7 +2,10 @@
 temp_dir: "scratch/"       # will be removed in the end. Store your intermediate files her
 result_dir: "results/"     # will be kept.
 
+# Samples
+# "." (dot) are forbidden in the sample column of the samples.tsv file. It will stop pipeline execution. Replace with "_" (underscore)
 samples: "config/samples.tsv"
+
 
 # adapters related to sequencing
 fasta_adapters: "config/adapters.fasta"
@@ -43,4 +46,5 @@ length:
 fastp:
   qualified_quality_phred: "15"     # Phred score threshold for a base to be qualified. >=Q15 is considered OK and qualified.
   average_quality:         "0"      # if read average quality score <avg_qual, then this read/pair is discarded. Default 0 means no requirement (int [=0]) 
-
+  min_length:              "18"     # reads shorter than length_required will be discarded.
+  max_length:              "25"     # reads longer than length_limit will be discarded, default 0 means no limitation.

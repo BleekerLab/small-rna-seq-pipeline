@@ -56,7 +56,7 @@ SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 ####################
 ## Desired outputs
 ####################
-QC = RES_DIR + "multiqc_report.html"
+QC = RES_DIR + "qc/multiqc_report.html"
 
 SEQ_DISTRI = RES_DIR + "seq_length_distribution.tsv"
 
@@ -72,6 +72,7 @@ BLAST = expand(RES_DIR + "blast/{sample}.{type}_mirbase.header.txt",sample = SAM
 
 rule all:
     input:
+        QC,
         SEQ_DISTRI,
         SHORTSTACK,
         SHORTSTACK_CONCAT,
@@ -316,19 +317,34 @@ rule keep_reads_shorter_than:
         bioawk -c fastx '{{ length($seq) <= {params.max_length} }} {{print "@"$name; print $seq ;print "+";print $qual}}' {input} > {output}
         """
 
+rule multiqc_report:
+    input:
+        expand(WORKING_DIR + "trimmed/{sample}_fastp.json", sample = SAMPLES)
+    output:
+        RES_DIR + "qc/multiqc_report.html"
+    message:
+        "Compiling QC reports from fastp"
+    params:
+        input_directory = WORKING_DIR + "trimmed/",
+        output_directory = RES_DIR + "qc/"
+    shell:
+        "multiqc --outdir {params.output_directory} {params.input_directory}"
+
 rule fastp:
     input:
         get_fastq_file
     output:
         fastq = WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
-        json = RES_DIR + "trimmed/{sample}.json",
-        html = RES_DIR + "trimmed/{sample}.html"
+        json = WORKING_DIR + "trimmed/{sample}_fastp.json",
+        html = WORKING_DIR + "trimmed/{sample}_fastp.html"
     message:
         "trimming {wildcards.sample} reads on quality and adapter presence"
     params:
-        adapters_fasta = config["fasta_adapters"],
-        qualified_quality_phred = str(config["fastp"]["qualified_quality_phred"]),
-        average_quality = str(config["fastp"]["average_quality"])
+        adapters_fasta =                config["fasta_adapters"],
+        qualified_quality_phred =       config["fastp"]["qualified_quality_phred"],
+        average_quality =               config["fastp"]["average_quality"],
+        min_length =                    config["fastp"]["min_length"],
+        max_length =                    config["fastp"]["max_length"]
     shell:
         "fastp -i {input} "
         "--stdout "
@@ -336,4 +352,9 @@ rule fastp:
         "--html {output.html} "
         "--qualified_quality_phred {params.qualified_quality_phred} "
         "--average_qual {params.average_quality} "
+        "--length_required {params.min_length} "
+        "--length_limit {params.max_length} "
         "--adapter_fasta {params.adapters_fasta} > {output.fastq}"
+
+
+      
