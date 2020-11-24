@@ -1,19 +1,17 @@
-FROM continuumio/miniconda3:latest
+FROM continuumio/miniconda:4.7.12
 
+WORKDIR /home/snakemake/
 
-LABEL author="l.fokkens@uva.nl" \
-      description="A Docker image used to build a container that is used to run the small-rna-seq-pipeline" \
-      url="https://github.com/BleekerLab/small-rna-seq-pipeline/envs/Dockerfile" \
-      usage="docker run mgalland/small-rna-seq-pipeline" 
+COPY ["environment.yml", "./"]
 
-# Create the environment:
-COPY environment.yml .
-RUN conda env create -f environment.yml
+# mamba is a faster C++ re-implemenbtation of conda
+# name of the environment is rnaseq
+RUN conda install -c conda-forge mamba --yes \
+  && mamba env create -f environment.yaml \
+  && conda clean --all
 
-# Change working directory 
+RUN echo "source activate small" > ~/.bashrc
+ENV PATH /opt/conda/envs/small/bin:$PATH
 
-# Make RUN commands use the new environment and run Snakemake
-ENTRYPOINT ["conda", "run", "-n", "small", "/bin/bash"]
-
-
-
+ENTRYPOINT ["snakemake"]
+CMD ["--version"]
