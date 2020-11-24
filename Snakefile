@@ -13,6 +13,7 @@ from helpers import extract_mature_micrornas_from_concatenated_shortstack_file
 from helpers import extract_hairpins_from_concatenated_shortstack_file
 from helpers import extract_mature_mirna_fasta_file_from_shortstack_file
 from helpers import create_df_of_seq_length_distributions
+from helpers import check_samples_tsv_file
 
 ###############################
 # OS and related configurations
@@ -37,8 +38,11 @@ wildcard_constraints:
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
 
+
+# Samples: verify 
 # get list of samples
-samples_df = pd.read_csv("config/samples.tsv", sep="\t").set_index("sample")
+# The first functions verify that the provided sample file 
+samples_df = check_samples_tsv_file(sample_tsv_file = "config/samples.tsv")
 SAMPLES = samples_df.index.values.tolist()
 
 # get fastq file
@@ -255,7 +259,7 @@ rule extract_mature_mirna_fasta_file_from_shortstack_file:
 
 rule shortstack:
     input:
-        reads =  WORKING_DIR + "trim/{sample}.trimmed.size.fastq"
+        reads =  WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq"
     output:
         RES_DIR + "shortstack/{sample}/Results.txt"
     message:"Shortstack analysis of {wildcards.sample} using {params.genome} reference"
@@ -283,13 +287,13 @@ rule shortstack:
 
 rule read_length_distribution:
     input: 
-        expand(WORKING_DIR + "trim/{sample}.trimmed.size.fastq", sample = SAMPLES)
+        expand(WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq", sample = SAMPLES)
     output:
         RES_DIR + "seq_length_distribution.tsv"
     message: 
         "Computing sequence length distribution for all samples"
     params:
-        path_to_fastq_files = WORKING_DIR + "trim/"
+        path_to_fastq_files = WORKING_DIR + "trimmed/"
     run:
         create_df_of_seq_length_distributions(path_to_fastq_files =  params.path_to_fastq_files, outfile = output[0])
 
@@ -301,7 +305,7 @@ rule keep_reads_shorter_than:
     input:
         WORKING_DIR + "trimmed/{sample}.trimmed.fastq"
     output:
-        WORKING_DIR + "trim/{sample}.trimmed.size.fastq"
+        WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq"
     message: "Discarding reads longer than {params.max_length} nucleotides"
     params:
         max_length = config["length"]["max_length"]
@@ -317,8 +321,8 @@ rule fastp:
         get_fastq_file
     output:
         fastq = WORKING_DIR + "trimmed/{sample}.trimmed.fastq",
-        json = WORKING_DIR + "trimmed/{sample}.json",
-        html = WORKING_DIR + "trimmed/{sample}.html"
+        json = RES_DIR + "trimmed/{sample}.json",
+        html = RES_DIR + "trimmed/{sample}.html"
     message:
         "trimming {wildcards.sample} reads on quality and adapter presence"
     params:
