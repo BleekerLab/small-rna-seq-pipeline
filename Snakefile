@@ -2,6 +2,7 @@ import os
 import subprocess
 from snakemake.utils import min_version
 import pandas as pd
+from datetime import datetime 
 
 from helpers import extract_hairpin_name_and_sequence
 from helpers import collect_clusterfiles_path
@@ -37,6 +38,7 @@ wildcard_constraints:
 # directories
 WORKING_DIR = config["temp_dir"]
 RES_DIR = config["result_dir"]
+CURRENT_TIME = datetime.now().strftime("%Y-%m-%d_%H-%M")  # time when pipeline started (will be used to rename result directory)
 
 
 # Samples: verify 
@@ -81,9 +83,14 @@ rule all:
         BLAST, 
         MFEs
     message:
-        "All done! Removing intermediate files in {WORKING_DIR}."
+        "All done! Removing intermediate files in {WORKING_DIR}. Adding date and current time to {RES_DIR} folder name"
+    params:
+        new_result_dir_name =  CURRENT_TIME + "_" + RES_DIR
     shell:
-        "rm -rf {WORKING_DIR}" # removes unwanted intermediate files
+        "rm -rf {WORKING_DIR};" # removes unwanted intermediate files
+        "mv {RES_DIR} {params.new_result_dir_name};"
+        "tar --gzip --create {params.new_result_dir_name}" # compress results as one file (.tar.gz)
+
 
 #######
 # Rules
@@ -260,7 +267,7 @@ rule extract_mature_mirna_fasta_file_from_shortstack_file:
 
 rule shortstack:
     input:
-        reads =  WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq"
+        reads =  WORKING_DIR + "trimmed/{sample}.trimmed.fastq"
     output:
         RES_DIR + "shortstack/{sample}/Results.txt"
     message:"Shortstack analysis of {wildcards.sample} using {params.genome} reference"
@@ -288,7 +295,7 @@ rule shortstack:
 
 rule read_length_distribution:
     input: 
-        expand(WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq", sample = SAMPLES)
+        expand(WORKING_DIR + "trimmed/{sample}.trimmed.fastq", sample = SAMPLES)
     output:
         RES_DIR + "seq_length_distribution.tsv"
     message: 
@@ -299,24 +306,9 @@ rule read_length_distribution:
         create_df_of_seq_length_distributions(path_to_fastq_files =  params.path_to_fastq_files, outfile = output[0])
 
 
-#############################
-## Trim reads for all samples
-#############################
-rule keep_reads_shorter_than:
-    input:
-        WORKING_DIR + "trimmed/{sample}.trimmed.fastq"
-    output:
-        WORKING_DIR + "trimmed/{sample}.trimmed.size.fastq"
-    message: "Discarding reads longer than {params.max_length} nucleotides"
-    params:
-        max_length = config["length"]["max_length"]
-    conda:
-        "envs/bioawk.yaml"
-    shell:
-        """
-        bioawk -c fastx '{{ length($seq) <= {params.max_length} }} {{print "@"$name; print $seq ;print "+";print $qual}}' {input} > {output}
-        """
-
+###########################################
+## Trim reads for all samples and QC report
+###########################################
 rule multiqc_report:
     input:
         expand(WORKING_DIR + "trimmed/{sample}_fastp.json", sample = SAMPLES)
@@ -328,7 +320,10 @@ rule multiqc_report:
         input_directory = WORKING_DIR + "trimmed/",
         output_directory = RES_DIR + "qc/"
     shell:
-        "multiqc --outdir {params.output_directory} {params.input_directory}"
+        "multiqc "
+        "--force " # force directory to be created
+        "--outdir {params.output_directory} "
+        "{params.input_directory}"
 
 rule fastp:
     input:
