@@ -106,8 +106,6 @@ rule rna_fold:
     output: 
         mfe = RES_DIR + "hairpins.mfe"
     message: "Calculate minimum free energy secondary structures of hairpins"
-    conda:
-        "envs/viennarna.yaml"
     params:
         temp_name = "hairpins.mfe"
     threads: 10
@@ -184,8 +182,6 @@ rule blast_hairpin_against_mirbase:
     output:
         WORKING_DIR + "blast/{sample}.hairpin_mirbase.txt"
     message:"blasting {wildcards.sample} hairpins against mirbase"
-    conda:
-        "envs/blast.yaml"
     params:
         dbname = config["refs"]["mirbase"]["hairpin"],
         max_target_seqs = config["blastn"]["hairpin"]["max_target_seqs"]
@@ -219,8 +215,6 @@ rule blast_mature_mirna_against_mirbase:
     output:
         WORKING_DIR + "blast/{sample}.mature_mirbase.txt"
     message:"blasting {wildcards.sample} mature miRNAs against mirbase"
-    conda:
-        "envs/blast.yaml"
     params:
         dbname = config["refs"]["mirbase"]["mature"],
         qcov_hsp_perc = config["blastn"]["mature"]["qcov_hsp_perc"],
@@ -242,8 +236,6 @@ rule make_mirbase_blastdb:
         mature = config["refs"]["mirbase"]["mature"] + ".nhr",
         hairpin = config["refs"]["mirbase"]["hairpin"] + ".nhr",
     message: "creating blastdb databases for mature miRNA and hairpins"
-    conda:
-        "envs/blast.yaml"
     shell:
         "makeblastdb -in {input.mature} -dbtype nucl;"
         "makeblastdb -in {input.hairpin} -dbtype nucl"
@@ -275,8 +267,6 @@ rule shortstack:
         resdir = RES_DIR + "shortstack/{sample}/",
         genome = lambda wildcards: samples_df.loc[wildcards.sample,"genome"]
     threads: 10
-    conda:
-        "envs/shortstack.yaml"
     shell:
         "ShortStack "
         "--outdir {wildcards.sample} "
