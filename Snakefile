@@ -89,7 +89,6 @@ rule all:
     shell:
         "rm -rf {WORKING_DIR};" # removes unwanted intermediate files
         "mv {RES_DIR} {params.new_result_dir_name};"
-        "tar --gzip --create {params.new_result_dir_name}" # compress results as one file (.tar.gz)
 
 
 #######
