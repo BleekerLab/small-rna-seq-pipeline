@@ -72,9 +72,9 @@ localrules: blast_hairpin_against_mirbase
 localrules: extract_hairpin_fasta_file
 localrules: blast_mature_mirna_against_mirbase
 localrules: make_mirbase_blastdb
-extract_mature_mirna_fasta_file_from_shortstack_file
-read_length_distribution
-multiqc_report
+localrules: extract_mature_mirna_fasta_file_from_shortstack_file
+localrules: read_length_distribution
+localrules: multiqc_report
 
 
 ####################
