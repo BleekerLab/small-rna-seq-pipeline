@@ -15,6 +15,7 @@ from helpers import extract_hairpins_from_concatenated_shortstack_file
 from helpers import extract_mature_mirna_fasta_file_from_shortstack_file
 from helpers import create_df_of_seq_length_distributions
 from helpers import check_samples_tsv_file
+from helpers import concatenate_shorstacks_and_assign_unique_cluster_ids
 
 ###############################
 # OS and related configurations
@@ -153,16 +154,15 @@ rule extract_fasta_files_for_hairpins_and_mature_miRNAs_from_concatenated_shorts
 
 rule concatenate_shorstacks_and_assign_unique_cluster_ids:
     input:
-        expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv", sample=SAMPLES)
+        expand(RES_DIR + "shortstack/{sample}/Results.with_sample_name_and_hairpins.tsv", sample = SAMPLES)
     output:
         RES_DIR + "concatenated_shortstacks.tsv"
-    message: "Row-bind all Shortstacks and assign a unique id to each sRNA cluster"
+    message: "Row-bind all Shortstacks and assign a unique id to each sRNA cluster."
     run: 
-        dfs = [pd.read_csv(f,sep="\t") for f in input]
-        df = pd.concat(dfs)
-        df["cluster_unique_id"] = ["cluster_" + str(i+1).zfill(10) for i in range(0,df.shape[0],1)]  
-        df.to_csv(output[0], sep="\t", index=False, header=True, na_rep = "NaN")
-
+        print(input)
+        concatenate_shorstacks_and_assign_unique_cluster_ids(
+            list_of_shortstack_dfs = input, 
+            outfile = output[0])
 
 rule add_sample_name_and_hairpin_seq_to_shortstack:
     input:
