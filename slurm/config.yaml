@@ -1,5 +1,3 @@
-profile_name: crunchomics
-cluster_config: crunchomics_cluster_config.yaml
 restart-times: 3
 jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
