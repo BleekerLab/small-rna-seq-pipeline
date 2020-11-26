@@ -1,8 +1,17 @@
 __default__:
     account: mgallan1             # your hpc account
     partition: all                # the partition you use
-    mail-user: ntpierce@ucdavis.edu # your email (optional!)
-    time: 360 # default time (minutes)
+    mail-user: m.galland@uva.nl   # your email (optional!)
+    time: 360                     # default time (minutes)
     nodes: 1
     ntasks: 1
-    mem: 14GB # default memory
+    mem: 14GB                     # default memory
+    cpus_per_task: 1              # most rules are simple ones so 1 CPU should be enough
+
+fastp:
+  time: 60
+  mem_mb: 1000                   # trimming is a more memory intensive task
+  cpus_per_task: 20              # trimming is a more CPU intensive task
+
+shortstack:
+  cpus_per_task: 20
