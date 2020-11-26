@@ -55,6 +55,28 @@ def get_fastq_file(wildcards):
 # ShortStack parameters
 SHORTSTACK_PARAMS = " ".join(config["shortstack"].values())
 
+
+######################
+# Local rule execution
+######################
+
+# Some rules are simple jobs which should not be submitted as jobs
+# The following rules will be run locally = on the head node on a HPC cluster.
+localrules: all
+localrules: extract_fasta_files_for_hairpins_and_mature_miRNAs_from_concatenated_shortstack
+localrules: concatenate_shorstacks_and_assign_unique_cluster_ids
+localrules: add_sample_name_and_hairpin_seq_to_shortstack
+localrules: add_blast_header
+
+localrules: blast_hairpin_against_mirbase
+localrules: extract_hairpin_fasta_file
+localrules: blast_mature_mirna_against_mirbase
+localrules: make_mirbase_blastdb
+extract_mature_mirna_fasta_file_from_shortstack_file
+read_length_distribution
+multiqc_report
+
+
 ####################
 ## Desired outputs
 ####################
