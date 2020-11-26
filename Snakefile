@@ -265,7 +265,7 @@ rule shortstack:
     params:
         resdir = RES_DIR + "shortstack/{sample}/",
         genome = lambda wildcards: samples_df.loc[wildcards.sample,"genome"]
-    threads: 10
+    threads: 20
     shell:
         "ShortStack "
         "--outdir {wildcards.sample} "
@@ -323,6 +323,9 @@ rule fastp:
         html = WORKING_DIR + "trimmed/{sample}_fastp.html"
     message:
         "trimming {wildcards.sample} reads on quality and adapter presence"
+    threads: 10
+    resources:
+        mem_mb = 1000
     params:
         adapters_fasta =                config["fasta_adapters"],
         qualified_quality_phred =       config["fastp"]["qualified_quality_phred"],
