@@ -18,19 +18,17 @@ def concatenate_shorstacks_and_assign_unique_cluster_ids(list_of_shortstack_dfs,
     The final resulting dataframe is written to a tab-separated file
     """
     dfs = [pd.read_csv(f, sep = "\t") for f in list_of_shortstack_dfs]
-    df = pd.concat(dfs) # row-bind the individual dataframes
-    
-    # We want every cluster to have a unique id number in the XXXX format where the number of X is the min required numeral number
-    total_nb_of_clusters = df.shape[0]                         # this returns 30610 for instance
-    required_number_of_digits = len(str(total_nb_of_clusters)) # this returns 5 if total_nb_of_clusters = 30610 for instance
-
-    cluster_unique_ids = ["cluster_" + str(i+1).zfill(required_number_of_digits) for i in range(0,df.shape[0],1)]  
-    cluster_unique_ids = pd.Series(cluster_unique_ids)    
+    concat_df = pd.concat(dfs) # row-bind the individual dataframes
+    concat_df['cluster_id'] = np.arange(len(concat_df))
+    cluster_unique_ids = "cluster_" + concat_df["cluster_id"].astype(str)
     
     # Add cluster_unique_id at the beginning of the dataframe
-    df.insert(0, "cluster_unique_id", cluster_unique_ids)
+    concat_df.insert(0, "cluster_unique_id", cluster_unique_ids)
     
-    df.to_csv(outfile, sep="\t", index = False, header = True, na_rep = "NaN")
+    # Only one id column required
+    concat_df = concat_df.drop(['cluster_id'], axis=1)
+         
+    concat_df.to_csv(outfile, sep="\t", index = False, header = True, na_rep = "NaN")
 
 
 def check_samples_tsv_file(sample_tsv_file = "config/samples.tsv"):
