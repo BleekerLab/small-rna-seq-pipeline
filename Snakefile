@@ -159,7 +159,6 @@ rule concatenate_shorstacks_and_assign_unique_cluster_ids:
         RES_DIR + "concatenated_shortstacks.tsv"
     message: "Row-bind all Shortstacks and assign a unique id to each sRNA cluster."
     run: 
-        print(input)
         concatenate_shorstacks_and_assign_unique_cluster_ids(
             list_of_shortstack_dfs = input, 
             outfile = output[0])
